@@ -885,6 +885,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 /*
 
 Results table
+Hide menu window when other windows are open
  
  */
 

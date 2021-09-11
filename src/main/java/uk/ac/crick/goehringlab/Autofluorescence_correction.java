@@ -42,6 +42,9 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
     // MENU WINDOW
 
+    // Frame
+    private JFrame menuFrame;
+
     // Buttons
     private Button menuCalButton;
     private Button menuRunButton;
@@ -112,6 +115,9 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
     // RUN WINDOW
 
+    // Frame
+    private JFrame runFrame;
+
     // Image names
     private Hashtable<String, Integer> runHashTable = new Hashtable<>();
 
@@ -136,7 +142,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
     private void menuWindowSetup() {
         // Set up window
-        JFrame menuFrame = new JFrame("Autofluorescence correction");
+        menuFrame = new JFrame("Autofluorescence correction");
         JPanel panel = new JPanel();
 
         // Panels
@@ -164,7 +170,8 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
 
     private void calWindowSetup() {
-        // First check that some images are open
+
+        // Check that some images are open
         int[] windowList = WindowManager.getIDList();
         if (windowList == null) {
             IJ.showMessage("At least 2 images must be open!");
@@ -272,7 +279,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Set up window
         // Frame
-        JFrame runFrame = new JFrame("Autofluorescence correction");
+        runFrame = new JFrame("Autofluorescence correction");
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0, 2, 10, 5));
 
@@ -348,7 +355,13 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Open window
         if (source == menuCalButton)
-            calWindowSetup();
+            // Check if window is already open
+            if (calFrame == null)
+                calWindowSetup();
+            else if (!calFrame.isVisible())
+                calWindowSetup();
+            else
+                calFrame.toFront();
 
         // Run calibration
         if (source == calRunButton) {
@@ -466,7 +479,14 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Open window
         if (source == menuRunButton)
-            runWindowSetup();
+
+            // Check if window is already open
+            if (runFrame == null)
+                runWindowSetup();
+            else if (!runFrame.isVisible())
+                runWindowSetup();
+            else
+                runFrame.toFront();
 
         // Run correction
         if (source == runRunButton) {
@@ -892,6 +912,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
     private void calRunContinue() {
         calFrame.dispatchEvent(new WindowEvent(calFrame, WindowEvent.WINDOW_CLOSING));
+        menuFrame.toFront();
     }
 
 
@@ -924,6 +945,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         }
     }
 
+
     private void calShowResTable() {
 //        SaveDialog sd = new SaveDialog("Export data as csv", "af_calibration_data", ".csv");
 //        calResultsTable.save(sd.getDirectory() + sd.getFileName());
@@ -939,6 +961,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         runRedChannel = (String) runRedChannelBox.getSelectedItem();
 
     }
+
 
     private void runRunCorrection2() {
         // Get images
@@ -962,6 +985,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         afImp3.close();
 
     }
+
 
     private void runRunCorrection3() {
         // Get images
@@ -999,7 +1023,6 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
 Calibration fails if images are 32-bit - investigate
 Keep image list updated (if possible)
-Prevent multiple calibration windows from being open at the same time
 Show residuals image (AF + background) for correction (multi-channel with GFP signal)
 Ability to run with macros
 

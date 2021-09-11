@@ -53,7 +53,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
     private JFrame calFrame;
 
     // Image names
-    private Hashtable<String, Integer> calHashTable = new Hashtable<String, Integer>();
+    private Hashtable<String, Integer> calHashTable = new Hashtable<>();
 
     // Entry widgets
     private JComboBox<String> calFlChannelBox;
@@ -110,7 +110,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
     // RUN WINDOW
 
     // Image names
-    private Hashtable<String, Integer> runHashTable = new Hashtable<String, Integer>();
+    private Hashtable<String, Integer> runHashTable = new Hashtable<>();
 
     // Entry widgets
     private JComboBox<String> runFlChannelBox;
@@ -156,7 +156,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         menuFrame.add(panel);
         menuFrame.pack();
         menuFrame.setLocationRelativeTo(null);
-        menuFrame.show();
+        menuFrame.setVisible(true);
     }
 
 
@@ -180,7 +180,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         String[] imageTitles = new String[windowList.length];
         String[] imageTitles_with_none = new String[windowList.length + 1];
         imageTitles_with_none[0] = "None";
-        calHashTable = new Hashtable<String, Integer>();
+        calHashTable = new Hashtable<>();
         for (int i = 0; i < windowList.length; i++) {
             final ImagePlus imp = WindowManager.getImage(windowList[i]);
             imageTitles[i] = imp.getTitle();
@@ -193,20 +193,20 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Fluorophore channel
         JLabel flChannelLabel = new JLabel("GFP channel:", SwingConstants.RIGHT);
-        calFlChannelBox = new JComboBox<String>(imageTitles);
+        calFlChannelBox = new JComboBox<>(imageTitles);
 
         // Autofluorescence channel
         JLabel afChannelLabel = new JLabel("AF channel:", SwingConstants.RIGHT);
-        calAfChannelBox = new JComboBox<String>(imageTitles);
+        calAfChannelBox = new JComboBox<>(imageTitles);
 
         // Red fluorophore channel (optional)
         JLabel redChannelLabel = new JLabel("RFP channel (optional):", SwingConstants.RIGHT);
-        calRedChannelBox = new JComboBox<String>(imageTitles_with_none);
+        calRedChannelBox = new JComboBox<>(imageTitles_with_none);
 
         // ROI channel
         JLabel roiChannelLabel = new JLabel("ROI (optional):", SwingConstants.RIGHT);
         String[] roiChannelList = {"None", "ROI in GFP channel", "ROI in AF channel", "ROI in RFP channel"};
-        calRoiChannelBox = new JComboBox<String>(roiChannelList);
+        calRoiChannelBox = new JComboBox<>(roiChannelList);
 
         // Gaussian
         JLabel gaussianLabel = new JLabel("Gaussian blur (radius):", SwingConstants.RIGHT);
@@ -252,7 +252,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         calFrame.add(panel);
         calFrame.pack();
         calFrame.setLocationRelativeTo(null);
-        calFrame.show();
+        calFrame.setVisible(true);
 
     }
 
@@ -278,7 +278,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         String[] imageTitles = new String[windowList.length];
         String[] imageTitles_with_none = new String[windowList.length + 1];
         imageTitles_with_none[0] = "None";
-        runHashTable = new Hashtable<String, Integer>();
+        runHashTable = new Hashtable<>();
         for (int i = 0; i < windowList.length; i++) {
             final ImagePlus imp = WindowManager.getImage(windowList[i]);
             imageTitles[i] = imp.getTitle();
@@ -290,15 +290,15 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Fluorophore channel
         JLabel flChannelLabel = new JLabel("GFP channel:", SwingConstants.RIGHT);
-        runFlChannelBox = new JComboBox<String>(imageTitles);
+        runFlChannelBox = new JComboBox<>(imageTitles);
 
         // Autofluorescence channel
         JLabel afChannelLabel = new JLabel("AF channel:", SwingConstants.RIGHT);
-        runAfChannelBox = new JComboBox<String>(imageTitles);
+        runAfChannelBox = new JComboBox<>(imageTitles);
 
         // Red channel
         JLabel redChannelLabel = new JLabel("RFP channel (optional):", SwingConstants.RIGHT);
-        runRedChannelBox = new JComboBox<String>(imageTitles_with_none);
+        runRedChannelBox = new JComboBox<>(imageTitles_with_none);
 
         // AF calibration
         JLabel cLabel = new JLabel("c:", SwingConstants.RIGHT);
@@ -332,7 +332,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         runFrame.add(panel);
         runFrame.pack();
         runFrame.setLocationRelativeTo(null);
-        runFrame.show();
+        runFrame.setVisible(true);
 
     }
 
@@ -508,10 +508,10 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         IJ.run(flImp2, "Gaussian Blur...", "sigma=" + calGaussianText.getText());
 
         // Get pixel values
-        List<Integer> xc = new ArrayList<Integer>();
-        List<Integer> yc = new ArrayList<Integer>();
-        List<Integer> flGausPixelVals = new ArrayList<Integer>();
-        List<Integer> flPixelVals = new ArrayList<Integer>();
+        List<Integer> xc = new ArrayList<>();
+        List<Integer> yc = new ArrayList<>();
+        List<Integer> flGausPixelVals = new ArrayList<>();
+        List<Integer> flPixelVals = new ArrayList<>();
         for (int y = 0; y < flImp.getDimensions()[1]; y++) {
             for (int x = 0; x < flImp.getDimensions()[0]; x++) {
                 if (roi.contains(x, y)) {
@@ -549,8 +549,8 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         IJ.run(afImp2, "Gaussian Blur...", "sigma=" + calGaussianText.getText());
 
         // Get pixel values
-        List<Integer> afGausPixelVals = new ArrayList<Integer>();
-        List<Integer> afPixelVals = new ArrayList<Integer>();
+        List<Integer> afGausPixelVals = new ArrayList<>();
+        List<Integer> afPixelVals = new ArrayList<>();
         for (int y = 0; y < afImp.getDimensions()[1]; y++) {
             for (int x = 0; x < afImp.getDimensions()[0]; x++) {
                 if (roi.contains(x, y)) {
@@ -583,8 +583,8 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
             IJ.run(redImp2, "Gaussian Blur...", "sigma=" + calGaussianText.getText());
 
             // Get pixel values
-            List<Integer> redGausPixelVals = new ArrayList<Integer>();
-            List<Integer> redPixelVals = new ArrayList<Integer>();
+            List<Integer> redGausPixelVals = new ArrayList<>();
+            List<Integer> redPixelVals = new ArrayList<>();
             for (int y = 0; y < redImp.getDimensions()[1]; y++) {
                 for (int x = 0; x < redImp.getDimensions()[0]; x++) {
                     if (roi.contains(x, y)) {

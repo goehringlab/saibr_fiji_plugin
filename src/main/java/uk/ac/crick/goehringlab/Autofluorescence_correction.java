@@ -1,17 +1,5 @@
 package uk.ac.crick.goehringlab;
 
-import Jama.Matrix;
-import Jama.QRDecomposition;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.WindowManager;
-import ij.gui.Plot;
-import ij.gui.Roi;
-import ij.io.SaveDialog;
-import ij.measure.ResultsTable;
-import ij.plugin.ImageCalculator;
-import ij.plugin.frame.PlugInDialog;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -22,18 +10,29 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Objects;
 
+import ij.IJ;
+import ij.ImagePlus;
+import ij.WindowManager;
+import ij.gui.Plot;
+import ij.gui.Roi;
+import ij.measure.ResultsTable;
+import ij.plugin.ChannelSplitter;
+import ij.plugin.ImageCalculator;
+import ij.plugin.frame.PlugInDialog;
+
+import Jama.Matrix;
+import Jama.QRDecomposition;
+
 
 public class Autofluorescence_correction extends PlugInDialog implements ActionListener {
 
     public Autofluorescence_correction() {
         super("Autofluorescence correction");
-
     }
 
 
     public void run(String arg) {
         menuWindowSetup();
-
     }
 
 
@@ -57,12 +56,13 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
     // Image names
     private Hashtable<String, Integer> calHashTable = new Hashtable<>();
+    private Hashtable<String, Integer> calChannelsHashTable = new Hashtable<>();
 
     // Entry widgets
+    private JComboBox<String> calImageBox;
     private JComboBox<String> calFlChannelBox;
     private JComboBox<String> calAfChannelBox;
     private JComboBox<String> calRedChannelBox;
-    private JComboBox<String> calRoiChannelBox;
     private JTextField calGaussianText;
 
     // Buttons
@@ -72,13 +72,13 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
     private Button calSaveButton;
 
     // Images
+    private String calImageName;
     private String calFlChannel;
     private String calAfChannel;
     private String calRedChannel;
-    private String calRoiChannel;
 
     // Roi
-    private Roi roi;
+    private Roi calRoi;
 
     // Pixel values
     private double[] calFlGausPixelValsArray;
@@ -120,8 +120,10 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
     // Image names
     private Hashtable<String, Integer> runHashTable = new Hashtable<>();
+    private Hashtable<String, Integer> runChannelsHashTable = new Hashtable<>();
 
     // Entry widgets
+    private JComboBox<String> runImageBox;
     private JComboBox<String> runFlChannelBox;
     private JComboBox<String> runAfChannelBox;
     private JComboBox<String> runRedChannelBox;
@@ -133,6 +135,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
     private Button runRunButton;
 
     // Images
+    private String runImageName;
     private String runFlChannel;
     private String runAfChannel;
     private String runRedChannel;
@@ -174,10 +177,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         // Check that some images are open
         int[] windowList = WindowManager.getIDList();
         if (windowList == null) {
-            IJ.showMessage("At least 2 images must be open!");
-            return;
-        } else if (windowList.length == 1) {
-            IJ.showMessage("At least 2 images must be open!");
+            IJ.showMessage("No images open!");
             return;
         }
 
@@ -188,34 +188,50 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Image titles
         String[] imageTitles = new String[windowList.length];
-        String[] imageTitles_with_none = new String[windowList.length + 1];
-        imageTitles_with_none[0] = "<None>";
         calHashTable = new Hashtable<>();
+        int maxChannels = 0;
         for (int i = 0; i < windowList.length; i++) {
             ImagePlus imp = WindowManager.getImage(windowList[i]);
             imageTitles[i] = imp.getTitle();
-            imageTitles_with_none[i + 1] = imp.getTitle();
+            maxChannels = Math.max(imp.getDimensions()[2], maxChannels);
             calHashTable.put(imageTitles[i], windowList[i]);
         }
 
+        // Channels list
+        String[] channels = new String[maxChannels];
+        String[] channels_with_none = new String[maxChannels + 1];
+        channels_with_none[0] = "<None>";
+        calChannelsHashTable = new Hashtable<>();
+        for (int i = 0; i < maxChannels; i++) {
+            channels[i] = "Channel " + (i + 1);
+            channels_with_none[i + 1] = "Channel " + (i + 1);
+            calChannelsHashTable.put(channels[i], i);
+        }
+
+
         // Panels
+
+        // Image
+        JLabel imageLabel = new JLabel("Image:", SwingConstants.RIGHT);
+        calImageBox = new JComboBox<>(imageTitles);
 
         // Fluorophore channel
         JLabel flChannelLabel = new JLabel("GFP channel:", SwingConstants.RIGHT);
-        calFlChannelBox = new JComboBox<>(imageTitles);
+        calFlChannelBox = new JComboBox<>(channels);
 
         // Autofluorescence channel
         JLabel afChannelLabel = new JLabel("AF channel:", SwingConstants.RIGHT);
-        calAfChannelBox = new JComboBox<>(imageTitles);
+        calAfChannelBox = new JComboBox<>(channels);
 
         // Red fluorophore channel (optional)
         JLabel redChannelLabel = new JLabel("RFP channel (optional):", SwingConstants.RIGHT);
-        calRedChannelBox = new JComboBox<>(imageTitles_with_none);
+        calRedChannelBox = new JComboBox<>(channels_with_none);
 
-        // ROI channel
-        JLabel roiChannelLabel = new JLabel("ROI (optional):", SwingConstants.RIGHT);
-        String[] roiChannelList = {"<None>", "ROI in GFP channel", "ROI in AF channel", "ROI in RFP channel"};
-        calRoiChannelBox = new JComboBox<>(roiChannelList);
+        // ROI
+        JLabel roiLabel = new JLabel("ROI (optional):", SwingConstants.RIGHT);
+        JLabel roiLabel2 = new JLabel("Specify ROI on image");
+        Font f = roiLabel2.getFont();
+        roiLabel2.setFont(f.deriveFont(f.getStyle() | Font.ITALIC));
 
         // Gaussian
         JLabel gaussianLabel = new JLabel("Gaussian blur (radius):", SwingConstants.RIGHT);
@@ -242,14 +258,16 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         calSaveButton.setEnabled(false);
 
         // Add panels
+        panel.add(imageLabel);
+        panel.add(calImageBox);
         panel.add(flChannelLabel);
         panel.add(calFlChannelBox);
         panel.add(afChannelLabel);
         panel.add(calAfChannelBox);
         panel.add(redChannelLabel);
         panel.add(calRedChannelBox);
-        panel.add(roiChannelLabel);
-        panel.add(calRoiChannelBox);
+        panel.add(roiLabel);
+        panel.add(roiLabel2);
         panel.add(gaussianLabel);
         panel.add(calGaussianText);
         panel.add(calRunButton);
@@ -270,10 +288,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         // First check that some images are open
         int[] windowList = WindowManager.getIDList();
         if (windowList == null) {
-            IJ.showMessage("At least 2 images must be open!");
-            return;
-        } else if (windowList.length == 1) {
-            IJ.showMessage("At least 2 images must be open!");
+            IJ.showMessage("No images open!");
             return;
         }
 
@@ -285,29 +300,43 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Image titles
         String[] imageTitles = new String[windowList.length];
-        String[] imageTitles_with_none = new String[windowList.length + 1];
-        imageTitles_with_none[0] = "<None>";
         runHashTable = new Hashtable<>();
+        int maxChannels = 0;
         for (int i = 0; i < windowList.length; i++) {
             ImagePlus imp = WindowManager.getImage(windowList[i]);
             imageTitles[i] = imp.getTitle();
-            imageTitles_with_none[i + 1] = imp.getTitle();
+            maxChannels = Math.max(imp.getDimensions()[2], maxChannels);
             runHashTable.put(imageTitles[i], windowList[i]);
+        }
+
+        // Channels list
+        String[] channels = new String[maxChannels];
+        String[] channels_with_none = new String[maxChannels + 1];
+        channels_with_none[0] = "<None>";
+        runChannelsHashTable = new Hashtable<>();
+        for (int i = 0; i < maxChannels; i++) {
+            channels[i] = "Channel " + (i + 1);
+            channels_with_none[i + 1] = "Channel " + (i + 1);
+            runChannelsHashTable.put(channels[i], i);
         }
 
         // Panels
 
+        // Image
+        JLabel imageLabel = new JLabel("Image:", SwingConstants.RIGHT);
+        runImageBox = new JComboBox<>(imageTitles);
+
         // Fluorophore channel
         JLabel flChannelLabel = new JLabel("GFP channel:", SwingConstants.RIGHT);
-        runFlChannelBox = new JComboBox<>(imageTitles);
+        runFlChannelBox = new JComboBox<>(channels);
 
         // Autofluorescence channel
         JLabel afChannelLabel = new JLabel("AF channel:", SwingConstants.RIGHT);
-        runAfChannelBox = new JComboBox<>(imageTitles);
+        runAfChannelBox = new JComboBox<>(channels);
 
-        // Red channel
+        // Red fluorophore channel (optional)
         JLabel redChannelLabel = new JLabel("RFP channel (optional):", SwingConstants.RIGHT);
-        runRedChannelBox = new JComboBox<>(imageTitles_with_none);
+        runRedChannelBox = new JComboBox<>(channels_with_none);
 
         // AF calibration
         JLabel cLabel = new JLabel("c:", SwingConstants.RIGHT);
@@ -323,6 +352,8 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         runRunButton.setEnabled(true);
 
         // Add panels
+        panel.add(imageLabel);
+        panel.add(runImageBox);
         panel.add(flChannelLabel);
         panel.add(runFlChannelBox);
         panel.add(afChannelLabel);
@@ -388,39 +419,29 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
                 return;
             }
 
-            // Checking images are still open
+            // Checking image is still open
             int[] windowList = WindowManager.getIDList();
             List<String> imageTitles = new ArrayList<>();
-            imageTitles.add("<None>");
             for (int j : windowList) {
                 ImagePlus imp = WindowManager.getImage(j);
                 imageTitles.add(imp.getTitle());
             }
 
-            if (!imageTitles.contains(calFlChannel)) {
-                IJ.showMessage("GFP channel image is not open");
+            if (!imageTitles.contains(calImageName)) {
+                IJ.showMessage("Image is not open!");
                 return;
             }
-            if (!imageTitles.contains(calAfChannel)) {
-                IJ.showMessage("AF channel image is not open");
-                return;
-            }
-            if (!imageTitles.contains(calRedChannel)) {
-                IJ.showMessage("RFP channel image is not open");
-                return;
-            }
-
 
             // Get ROI
             calGetRoi();
 
             // Checking roi requirements
-            if (roi == null) {
+            if (calRoi == null) {
                 IJ.showMessage("No ROI selected");
                 return;
             }
 
-            if (!roi.isArea()) {
+            if (!calRoi.isArea()) {
                 IJ.showMessage("Area selection required");
                 return;
             }
@@ -433,7 +454,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
                 IJ.showMessage("WARNING: " + calFlSatCount + " saturated GFP channel pixels");
             }
             if (calAfSatCount > 0) {
-                IJ.showMessage("WARNING: " + calFlSatCount + " saturated AF channel pixels");
+                IJ.showMessage("WARNING: " + calAfSatCount + " saturated AF channel pixels");
             }
             if (calRedSatCount > 0) {
                 IJ.showMessage("WARNING: " + calRedSatCount + " saturated RFP channel pixels");
@@ -507,6 +528,19 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
                 return;
             }
 
+            // Checking image is still open
+            int[] windowList = WindowManager.getIDList();
+            List<String> imageTitles = new ArrayList<>();
+            for (int j : windowList) {
+                ImagePlus imp = WindowManager.getImage(j);
+                imageTitles.add(imp.getTitle());
+            }
+
+            if (!imageTitles.contains(runImageName)) {
+                IJ.showMessage("Image is not open!");
+                return;
+            }
+
             // Run correction
             if (Objects.equals(runRedChannel, "<None>"))
                 runRunCorrection2();
@@ -521,47 +555,39 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
     /////////////// CALIBRATION FUNCTIONS //////////////
 
     private void calGetImages() {
+        calImageName = (String) calImageBox.getSelectedItem();
         calFlChannel = (String) calFlChannelBox.getSelectedItem();
         calAfChannel = (String) calAfChannelBox.getSelectedItem();
         calRedChannel = (String) calRedChannelBox.getSelectedItem();
-        calRoiChannel = (String) calRoiChannelBox.getSelectedItem();
     }
 
 
     private void calGetRoi() {
-        ImagePlus roiImp;
-        if (Objects.equals(calRoiChannel, "ROI in GFP channel")) {
-            roiImp = WindowManager.getImage(calHashTable.get(calFlChannel));
-            roi = roiImp.getRoi();
-        } else if (Objects.equals(calRoiChannel, "ROI in AF channel")) {
-            roiImp = WindowManager.getImage(calHashTable.get(calAfChannel));
-            roi = roiImp.getRoi();
-        } else if (Objects.equals(calRoiChannel, "ROI in RFP channel")) {
-            if (Objects.equals(calRedChannel, "<None>"))
-                roi = null;
-            else {
-                roiImp = WindowManager.getImage(calHashTable.get(calRedChannel));
-                roi = roiImp.getRoi();
-            }
-        } else {    // If "<None>" -> select whole area
-            roiImp = WindowManager.getImage(calHashTable.get(calFlChannel));
-            roi = new Roi(0, 0, roiImp.getDimensions()[0], roiImp.getDimensions()[1]);
-        }
+        // Select image
+        ImagePlus Imp = WindowManager.getImage(calHashTable.get(calImageName));
+
+        // Get ROI
+        calRoi = Imp.getRoi();
+
+        // If no ROI, select whole area
+        if (calRoi == null)
+            calRoi = new Roi(0, 0, Imp.getDimensions()[0], Imp.getDimensions()[1]);
     }
 
 
     private void calGetPixels() {
 
+        // Get image
+        ImagePlus imp = WindowManager.getImage(calHashTable.get(calImageName));
+        ImagePlus[] channels = ChannelSplitter.split(imp);
+
         // FLOUROPHORE CHANNEL
 
-        // Get image
-        ImagePlus flImp = WindowManager.getImage(calHashTable.get(calFlChannel));
+        // Get channel
+        ImagePlus flImp = channels[calChannelsHashTable.get(calFlChannel)];
 
         // Duplicate image
         ImagePlus flImp2 = flImp.duplicate();
-
-//        // Convert to 32-bit
-//        IJ.run(flImp2, "32-bit", "");
 
         // Apply gaussian
         IJ.run(flImp2, "Gaussian Blur...", "sigma=" + calGaussianText.getText());
@@ -574,7 +600,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         List<Double> flPixelVals = new ArrayList<>();
         for (int y = 0; y < flImp.getDimensions()[1]; y++) {
             for (int x = 0; x < flImp.getDimensions()[0]; x++) {
-                if (roi.contains(x, y)) {
+                if (calRoi.contains(x, y)) {
                     xc.add(x);
                     yc.add(y);
                     flGausPixelVals.add((double) flImp2.getPixel(x, y)[0]);
@@ -604,24 +630,22 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // AF CHANNEL
 
-        // Get image
-        ImagePlus afImp = WindowManager.getImage(calHashTable.get(calAfChannel));
+        // Get channel
+        ImagePlus afImp = channels[calChannelsHashTable.get(calAfChannel)];
 
         // Duplicate image
         ImagePlus afImp2 = afImp.duplicate();
-
-//        // Convert to 32-bit
-//        IJ.run(afImp2, "32-bit", "");
 
         // Apply gaussian
         IJ.run(afImp2, "Gaussian Blur...", "sigma=" + calGaussianText.getText());
 
         // Get pixel values
+        calAfSatCount = 0;
         List<Double> afGausPixelVals = new ArrayList<>();
         List<Double> afPixelVals = new ArrayList<>();
         for (int y = 0; y < afImp.getDimensions()[1]; y++) {
             for (int x = 0; x < afImp.getDimensions()[0]; x++) {
-                if (roi.contains(x, y)) {
+                if (calRoi.contains(x, y)) {
                     afGausPixelVals.add((double) afImp2.getPixel(x, y)[0]);
                     afPixelVals.add((double) afImp.getPixel(x, y)[0]);
 
@@ -646,24 +670,22 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         // RED CHANNEL
 
         if (!Objects.equals(calRedChannel, "<None>")) {
-            // Get image
-            ImagePlus redImp = WindowManager.getImage(calHashTable.get(calRedChannel));
+            // Get channel
+            ImagePlus redImp = channels[calChannelsHashTable.get(calRedChannel)];
 
             // Duplicate image
             ImagePlus redImp2 = redImp.duplicate();
-
-//            // Convert to 32-bit
-//            IJ.run(redImp2, "32-bit", "");
 
             // Apply gaussian
             IJ.run(redImp2, "Gaussian Blur...", "sigma=" + calGaussianText.getText());
 
             // Get pixel values
+            calRedSatCount = 0;
             List<Double> redGausPixelVals = new ArrayList<>();
             List<Double> redPixelVals = new ArrayList<>();
             for (int y = 0; y < redImp.getDimensions()[1]; y++) {
                 for (int x = 0; x < redImp.getDimensions()[0]; x++) {
-                    if (roi.contains(x, y)) {
+                    if (calRoi.contains(x, y)) {
                         redGausPixelVals.add((double) redImp2.getPixel(x, y)[0]);
                         redPixelVals.add((double) redImp.getPixel(x, y)[0]);
 
@@ -846,9 +868,13 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
 
     private void calCalcResids2() {
-        // Get images
-        ImagePlus flImp = WindowManager.getImage(calHashTable.get(calFlChannel));
-        ImagePlus afImp = WindowManager.getImage(calHashTable.get(calAfChannel));
+        // Get image
+        ImagePlus imp = WindowManager.getImage(calHashTable.get(calImageName));
+        ImagePlus[] channels = ChannelSplitter.split(imp);
+
+        // Get channels
+        ImagePlus flImp = channels[calChannelsHashTable.get(calFlChannel)];
+        ImagePlus afImp = channels[calChannelsHashTable.get(calAfChannel)];
 
         // Duplicate af image
         ImagePlus afImp3 = afImp.duplicate();
@@ -869,10 +895,14 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
 
     private void calCalcResids3() {
+        // Get image
+        ImagePlus imp = WindowManager.getImage(calHashTable.get(calImageName));
+        ImagePlus[] channels = ChannelSplitter.split(imp);
+
         // Get images
-        ImagePlus flImp = WindowManager.getImage(calHashTable.get(calFlChannel));
-        ImagePlus afImp = WindowManager.getImage(calHashTable.get(calAfChannel));
-        ImagePlus redImp = WindowManager.getImage(calHashTable.get(calRedChannel));
+        ImagePlus flImp = channels[calChannelsHashTable.get(calFlChannel)];
+        ImagePlus afImp = channels[calChannelsHashTable.get(calAfChannel)];
+        ImagePlus redImp = channels[calChannelsHashTable.get(calRedChannel)];
 
         // Duplicate images
         ImagePlus afImp3 = afImp.duplicate();
@@ -956,6 +986,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
 
     private void runGetImages() {
+        runImageName = (String) runImageBox.getSelectedItem();
         runFlChannel = (String) runFlChannelBox.getSelectedItem();
         runAfChannel = (String) runAfChannelBox.getSelectedItem();
         runRedChannel = (String) runRedChannelBox.getSelectedItem();
@@ -964,9 +995,13 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
 
     private void runRunCorrection2() {
-        // Get images
-        ImagePlus flImp = WindowManager.getImage(runHashTable.get(runFlChannel));
-        ImagePlus afImp = WindowManager.getImage(runHashTable.get(runAfChannel));
+        // Get image
+        ImagePlus imp = WindowManager.getImage(runHashTable.get(runImageName));
+        ImagePlus[] channels = ChannelSplitter.split(imp);
+
+        // Get channels
+        ImagePlus flImp = channels[runChannelsHashTable.get(runFlChannel)];
+        ImagePlus afImp = channels[runChannelsHashTable.get(runAfChannel)];
 
         // Duplicate af image
         ImagePlus afImp3 = afImp.duplicate();
@@ -988,10 +1023,14 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
 
     private void runRunCorrection3() {
-        // Get images
-        ImagePlus flImp = WindowManager.getImage(runHashTable.get(runFlChannel));
-        ImagePlus afImp = WindowManager.getImage(runHashTable.get(runAfChannel));
-        ImagePlus redImp = WindowManager.getImage(runHashTable.get(runRedChannel));
+        // Get image
+        ImagePlus imp = WindowManager.getImage(runHashTable.get(runImageName));
+        ImagePlus[] channels = ChannelSplitter.split(imp);
+
+        // Get channels
+        ImagePlus flImp = channels[runChannelsHashTable.get(runFlChannel)];
+        ImagePlus afImp = channels[runChannelsHashTable.get(runAfChannel)];
+        ImagePlus redImp = channels[runChannelsHashTable.get(runRedChannel)];
 
         // Duplicate images
         ImagePlus afImp3 = afImp.duplicate();
@@ -1021,10 +1060,13 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
 /*
 
-Calibration fails if images are 32-bit - investigate
-Keep image list updated (if possible)
-Show residuals image (AF + background) for correction (multi-channel with GFP signal)
+To do:
+Ability to calibrate with multiple images (checklist)
 Ability to run with macros
+Throw error if images are not 16-bit
+For calibration: if it's a movie, use currently selected channel instead of first channel
+Refresh image list button
+Force menu window to front when cal/run windows are closed
 
  */
 

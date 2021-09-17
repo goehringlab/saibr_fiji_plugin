@@ -248,7 +248,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         calResidsButton.setEnabled(false);
 
         // Export data
-        calTabButton = new Button("Results table");
+        calTabButton = new Button("Export pixel data");
         calTabButton.addActionListener(this);
         calTabButton.setEnabled(false);
 
@@ -432,15 +432,18 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
                 return;
             }
 
+            // Checking image bit depth
+            ImagePlus imp = WindowManager.getImage(calHashTable.get(calImageName));
+            int bitDepth = imp.getBitDepth();
+            if (bitDepth != 16) {
+                IJ.showMessage("16-bit image required");
+                return;
+            }
+
             // Get ROI
             calGetRoi();
 
             // Checking roi requirements
-            if (calRoi == null) {
-                IJ.showMessage("No ROI selected");
-                return;
-            }
-
             if (!calRoi.isArea()) {
                 IJ.showMessage("Area selection required");
                 return;
@@ -538,6 +541,14 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
             if (!imageTitles.contains(runImageName)) {
                 IJ.showMessage("Image is not open!");
+                return;
+            }
+
+            // Checking image bit depth
+            ImagePlus imp = WindowManager.getImage(runHashTable.get(runImageName));
+            int bitDepth = imp.getBitDepth();
+            if (bitDepth != 16) {
+                IJ.showMessage("16-bit image required");
                 return;
             }
 
@@ -979,7 +990,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
     private void calShowResTable() {
 //        SaveDialog sd = new SaveDialog("Export data as csv", "af_calibration_data", ".csv");
 //        calResultsTable.save(sd.getDirectory() + sd.getFileName());
-        calResultsTable.show("Results table");
+        calResultsTable.show("Pixel data");
     }
 
     /////////////// CORRECTION FUNCTIONS ///////////////
@@ -1063,7 +1074,6 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 To do:
 Ability to calibrate with multiple images (checklist)
 Ability to run with macros
-Throw error if images are not 16-bit
 For calibration: if it's a movie, use currently selected channel instead of first channel
 Refresh image list button
 Force menu window to front when cal/run windows are closed

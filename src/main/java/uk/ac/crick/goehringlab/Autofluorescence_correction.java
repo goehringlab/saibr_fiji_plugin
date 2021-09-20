@@ -65,6 +65,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
     private JComboBox<String> calFlChannelBox;
     private JComboBox<String> calAfChannelBox;
     private JComboBox<String> calRedChannelBox;
+    private JCheckBox calRoiCheckbox;
     private JTextField calGaussianText;
 
     // Buttons
@@ -174,6 +175,16 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
             calHashTable.put(calAllImageTitles[i], windowList[i]);
         }
 
+        // Check for ambiguities
+        for (int i = 0; i < calAllImageTitles.length; i++) {
+            for (int j = 0; j < calAllImageTitles.length; j++) {
+                if (i > j && Objects.equals(calAllImageTitles[i], calAllImageTitles[j])) {
+                    IJ.showMessage("WARNING: Multiple images with name " + calAllImageTitles[i] +
+                            ". May cause ambiguities.");
+                }
+            }
+        }
+
         // Channels list
         String[] channels = new String[maxChannels];
         String[] channels_with_none = new String[maxChannels + 1];
@@ -209,10 +220,11 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         calRedChannelBox = new JComboBox<>(channels_with_none);
 
         // ROI
-        JLabel roiLabel = new JLabel("ROI (optional):", SwingConstants.RIGHT);
-        JLabel roiLabel2 = new JLabel("Specify ROI on image(s)");
-        Font f = roiLabel2.getFont();
-        roiLabel2.setFont(f.deriveFont(f.getStyle() | Font.ITALIC));
+        JLabel roiLabel = new JLabel("Use ROI(s):", SwingConstants.RIGHT);
+        calRoiCheckbox = new JCheckBox("Specify ROI on image(s)");
+        Font f = calRoiCheckbox.getFont();
+        calRoiCheckbox.setFont(f.deriveFont(f.getStyle() | Font.ITALIC));
+        calRoiCheckbox.setSelected(true);
 
         // Gaussian
         JLabel gaussianLabel = new JLabel("Gaussian blur (radius):", SwingConstants.RIGHT);
@@ -253,7 +265,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         panel.add(redChannelLabel);
         panel.add(calRedChannelBox);
         panel.add(roiLabel);
-        panel.add(roiLabel2);
+        panel.add(calRoiCheckbox);
         panel.add(gaussianLabel);
         panel.add(calGaussianText);
         panel.add(calRunButton);
@@ -444,15 +456,15 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Checking channel requirements
         if (Objects.equals(calFlChannel, calAfChannel)) {
-            IJ.showMessage("GFP and AF channels must be different");
+            IJ.showMessage("ERROR: GFP and AF channels must be different");
             return;
         }
         if (Objects.equals(calAfChannel, calRedChannel)) {
-            IJ.showMessage("AF and RFP channels must be different");
+            IJ.showMessage("ERROR: AF and RFP channels must be different");
             return;
         }
         if (Objects.equals(calRedChannel, calFlChannel)) {
-            IJ.showMessage("GFP and RFP channels must be different");
+            IJ.showMessage("ERROR: GFP and RFP channels must be different");
             return;
         }
 
@@ -480,14 +492,21 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
             return;
         }
 
+        // Error if too many images selected
+        if (calSelectedImageTitles.size() > 10) {
+            IJ.showMessage("Too many images selected. Please select 10 or fewer.");
+            return;
+        }
+
         // Store images
         calImages = new ImagePlus[calSelectedImageTitles.size()];
+        Roi[] calRois = new Roi[calSelectedImageTitles.size()];
         for (int i = 0; i < calSelectedImageTitles.size(); i++) {
             String imageName = calSelectedImageTitles.get(i);
 
             // Checking image is still open
             if (!imageTitles.contains(imageName)) {
-                IJ.showMessage("Image is not open!");
+                IJ.showMessage("ERROR: Image " + imageName + " is not open!");
                 return;
             }
 
@@ -497,7 +516,26 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
             // Checking image bit depth
             int bitDepth = imp.getBitDepth();
             if (bitDepth != 16) {
-                IJ.showMessage("16-bit image required");
+                IJ.showMessage("ERROR: 16-bit images required");
+                return;
+            }
+
+            // Get ROI
+            if (calRoiCheckbox.isSelected()) {
+                Roi roi = imp.getRoi();
+                if (roi == null) {
+                    IJ.showMessage("ERROR: No ROI selected for " + imageName);
+                    return;
+                }
+                calRois[i] = roi;
+            } else {
+                Roi roi = new Roi(0, 0, imp.getDimensions()[0], imp.getDimensions()[1]);
+                calRois[i] = roi;
+            }
+
+            // Checking roi requirements
+            if (!calRois[i].isArea()) {
+                IJ.showMessage("ERROR: No ROI selected for " + imageName);
                 return;
             }
 
@@ -512,15 +550,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         calEmbryoData[] allEmbryoData = new calEmbryoData[calSelectedImageTitles.size()];
         for (int i = 0; i < calImages.length; i++) {
             ImagePlus imp = calImages[i];
-
-            // Get ROI
-            Roi roi = calGetRoi(imp);
-
-            // Checking roi requirements
-            if (!roi.isArea()) {
-                IJ.showMessage("Area selection required");
-                return;
-            }
+            Roi roi = calRois[i];
 
             // Get embryo data
             calEmbryoData data;
@@ -593,18 +623,6 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         calSaveButton.setEnabled(true);
         calTabButton.setEnabled(true);
         calResidsButton.setEnabled(true);
-    }
-
-
-    private Roi calGetRoi(ImagePlus imp) {
-        // Get ROI
-        Roi roi = imp.getRoi();
-
-        // If no ROI, select whole area
-        if (roi == null)
-            roi = new Roi(0, 0, imp.getDimensions()[0], imp.getDimensions()[1]);
-
-        return roi;
     }
 
 
@@ -888,7 +906,8 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Set up plot
         Plot plot = new Plot("Linear model", "Linear model: c + m1 * (AF channel)", "GFP channel");
-        String[] colours = {"red", "green", "blue", "orange", "pink", "purple", "yellow", "brown"};
+        Color[] colours = {Color.blue, Color.green, Color.red, Color.cyan, Color.magenta, Color.orange, Color.pink,
+                Color.gray, Color.lightGray, Color.gray};
 
         // Loop through embryos
         for (int j = 0; j < allEmbryoData.length; j++) {
@@ -904,8 +923,16 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         }
 
-        // Plot line
+        // Add legend
         plot.setColor("black");
+        String legend = "";
+        for (String i : calSelectedImageTitles) {
+            legend += i;
+            legend += "\n";
+        }
+        plot.addLegend(legend);
+
+        // Plot line
         plot.addPoints(new double[]{0, 65536}, new double[]{0, 65536}, Plot.LINE);
 
         // Add equation
@@ -923,7 +950,8 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Set up plot
         Plot plot = new Plot("Linear model", "Linear model: c + m1 * (AF channel) + m2 * (RFP channel)", "GFP channel");
-        String[] colours = {"red", "green", "blue", "orange", "pink", "purple", "yellow", "brown"};
+        Color[] colours = {Color.blue, Color.green, Color.red, Color.cyan, Color.magenta, Color.orange, Color.pink,
+                Color.gray, Color.lightGray, Color.gray};
 
         // Loop through embryos
         for (int j = 0; j < allEmbryoData.length; j++) {
@@ -939,8 +967,16 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         }
 
-        // Plot line
+        // Add legend
         plot.setColor("black");
+        String legend = "";
+        for (String i : calSelectedImageTitles) {
+            legend += i;
+            legend += "\n";
+        }
+        plot.addLegend(legend);
+
+        // Plot line
         plot.addPoints(new double[]{0, 65536}, new double[]{0, 65536}, Plot.LINE);
 
         // Add equation
@@ -978,7 +1014,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         afImp3.close();
 
         // Set title
-        CorrectedImp.setTitle("Residuals of" + title);
+        CorrectedImp.setTitle("Residuals of " + title);
 
         // Show residuals
         CorrectedImp.show();
@@ -1016,7 +1052,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         redImp3.close();
 
         // Set title
-        CorrectedImp.setTitle("Residuals of" + title);
+        CorrectedImp.setTitle("Residuals of " + title);
 
         // Show residuals
         CorrectedImp.show();
@@ -1083,15 +1119,15 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Checking channel requirements
         if (Objects.equals(runFlChannel, runAfChannel)) {
-            IJ.showMessage("GFP and AF channels must be different");
+            IJ.showMessage("ERROR: GFP and AF channels must be different");
             return;
         }
         if (Objects.equals(runAfChannel, runRedChannel)) {
-            IJ.showMessage("AF and RFP channels must be different");
+            IJ.showMessage("ERROR: AF and RFP channels must be different");
             return;
         }
         if (Objects.equals(runRedChannel, runFlChannel)) {
-            IJ.showMessage("GFP and RFP channels must be different");
+            IJ.showMessage("ERROR: GFP and RFP channels must be different");
             return;
         }
 
@@ -1106,30 +1142,33 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         }
 
         if (!imageTitles.contains(runImageName)) {
-            IJ.showMessage("Image is not open!");
+            IJ.showMessage("ERROR: Image is not open!");
             return;
         }
 
         // Get image
         ImagePlus imp = WindowManager.getImage(runHashTable.get(runImageName));
 
+        // Duplicate image
+        ImagePlus imp2 = imp.duplicate();
+
         // Checking image bit depth
-        int bitDepth = imp.getBitDepth();
+        int bitDepth = imp2.getBitDepth();
         if (bitDepth != 16) {
-            IJ.showMessage("16-bit image required");
+            IJ.showMessage("ERROR: 16-bit image required");
             return;
         }
 
         // Run correction
         if (Objects.equals(runRedChannel, "<None>"))
-            runRunCorrection2(imp);
+            runRunCorrection2(imp2, runImageName);
         else
-            runRunCorrection3(imp);
+            runRunCorrection3(imp2, runImageName);
 
     }
 
 
-    private void runRunCorrection2(ImagePlus imp) {
+    private void runRunCorrection2(ImagePlus imp, String title) {
 
         // Get channels
         ImagePlus[] channels = ChannelSplitter.split(imp);
@@ -1147,15 +1186,21 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         // Perform subtraction
         ImageCalculator ic = new ImageCalculator();
         ImagePlus correctedImp = ic.run("Subtract create 32-bit stack", flImp, afImp3);
-        correctedImp.show();
 
         // Close calculated AF image
         afImp3.close();
 
+        // Rename image
+        correctedImp.setTitle("Result of " + title);
+
+        // Show image
+        correctedImp.show();
+
+
     }
 
 
-    private void runRunCorrection3(ImagePlus imp) {
+    private void runRunCorrection3(ImagePlus imp, String title) {
 
         // Get channels
         ImagePlus[] channels = ChannelSplitter.split(imp);
@@ -1178,11 +1223,17 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         ImageCalculator ic = new ImageCalculator();
         ImagePlus temp = ic.run("Add create 32-bit stack", afImp3, redImp3);
         ImagePlus correctedImp = ic.run("Subtract create 32-bit stack", flImp, temp);
-        correctedImp.show();
 
         // Close images
         afImp3.close();
         redImp3.close();
+
+        // Rename image
+        correctedImp.setTitle("Result of " + title);
+
+        // Show image
+        correctedImp.show();
+
 
     }
 
@@ -1195,17 +1246,12 @@ To do:
 Ability to run with macros
 For calibration: if it's a movie, use currently selected channel instead of first channel
 Force menu window to front when cal/run windows are closed
-For run: if m2 is nonzero and a red image isn't specified, throw an error
-A "Use ROI" button
-Put legend on plot to specify which embryo is which
-Enforce maximum number of images (maybe 10)
-Check plot colours are all valid. Looks like some are appearing as black
-Any way to improve plot? Looks pretty bad when lots of embryos are used.
 Rename variables/functions and tidy up
-Potential clashes if multiple images of same name
+Thicken line on plot
+If calibrate window is closed and reopened, load previous configurations
 
 Bugs:
-Will crash if image is closed and subsequently reopened
+Will crash if image is closed and subsequently reopened (window ID doesn't match up with name)
 
  */
 

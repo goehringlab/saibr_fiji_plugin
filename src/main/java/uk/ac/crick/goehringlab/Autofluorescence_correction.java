@@ -5,10 +5,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -111,6 +109,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
     private JTextField runM2Text;
 
     // Buttons
+    private Button runRefreshButton;
     private Button runRunButton;
 
     // Channels
@@ -347,6 +346,11 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         JLabel m2Label = new JLabel("m2:", SwingConstants.RIGHT);
         runM2Text = new JTextField(String.format("%.3f", cal_m2), 4);
 
+        // Refresh
+        runRefreshButton = new Button("Refresh image list");
+        runRefreshButton.addActionListener(this);
+        runRefreshButton.setEnabled(true);
+
         // Run
         runRunButton = new Button("Run correction");
         runRunButton.addActionListener(this);
@@ -367,6 +371,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         panel.add(runM1Text);
         panel.add(m2Label);
         panel.add(runM2Text);
+        panel.add(runRefreshButton);
         panel.add(runRunButton);
 
         // Finish panel
@@ -432,6 +437,10 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
                 runWindowSetup();
             else
                 runFrame.toFront();
+
+        // Refresh
+        if (source == runRefreshButton)
+            runRefresh();
 
         // Run correction
         if (source == runRunButton)
@@ -925,12 +934,12 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Add legend
         plot.setColor("black");
-        String legend = "";
+        StringBuilder legend = new StringBuilder();
         for (String i : calSelectedImageTitles) {
-            legend += i;
-            legend += "\n";
+            legend.append(i);
+            legend.append("\n");
         }
-        plot.addLegend(legend);
+        plot.addLegend(legend.toString());
 
         // Plot line
         plot.addPoints(new double[]{0, 65536}, new double[]{0, 65536}, Plot.LINE);
@@ -969,12 +978,12 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
         // Add legend
         plot.setColor("black");
-        String legend = "";
+        StringBuilder legend = new StringBuilder();
         for (String i : calSelectedImageTitles) {
-            legend += i;
-            legend += "\n";
+            legend.append(i);
+            legend.append("\n");
         }
-        plot.addLegend(legend);
+        plot.addLegend(legend.toString());
 
         // Plot line
         plot.addPoints(new double[]{0, 65536}, new double[]{0, 65536}, Plot.LINE);
@@ -1107,6 +1116,63 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
     }
 
     /////////////// CORRECTION FUNCTIONS ///////////////
+
+
+    private void runRefresh() {
+
+        // Save existing configurations
+        String imageName = (String) runImageBox.getSelectedItem();
+        String flChannel = (String) runFlChannelBox.getSelectedItem();
+        String afChannel = (String) runAfChannelBox.getSelectedItem();
+        String redChannel = (String) runRedChannelBox.getSelectedItem();
+
+        // Checking windows are open
+        int[] windowList = WindowManager.getIDList();
+        if (windowList == null) {
+            IJ.showMessage("No images open!");
+            return;
+        }
+
+        // Image titles
+        String[] imageTitles = new String[windowList.length];
+        runHashTable = new Hashtable<>();
+        int maxChannels = 0;
+        for (int i = 0; i < windowList.length; i++) {
+            ImagePlus imp = WindowManager.getImage(windowList[i]);
+            imageTitles[i] = imp.getTitle();
+            maxChannels = Math.max(imp.getDimensions()[2], maxChannels);
+            runHashTable.put(imageTitles[i], windowList[i]);
+        }
+
+        // Channels list
+        String[] channels = new String[maxChannels];
+        String[] channels_with_none = new String[maxChannels + 1];
+        channels_with_none[0] = "<None>";
+        runChannelsHashTable = new Hashtable<>();
+        for (int i = 0; i < maxChannels; i++) {
+            channels[i] = "Channel " + (i + 1);
+            channels_with_none[i + 1] = "Channel " + (i + 1);
+            runChannelsHashTable.put(channels[i], i);
+        }
+
+        // Update image list
+        runImageBox.removeAllItems();
+        for (String i : imageTitles) runImageBox.addItem(i);
+        if (Arrays.asList(imageTitles).contains(imageName)) runImageBox.setSelectedItem(imageName);
+
+        // Update channels list
+        runFlChannelBox.removeAllItems();
+        for (String i : channels) runFlChannelBox.addItem(i);
+        if (Arrays.asList(channels).contains(flChannel)) runFlChannelBox.setSelectedItem(flChannel);
+        runAfChannelBox.removeAllItems();
+        for (String i : channels) runAfChannelBox.addItem(i);
+        if (Arrays.asList(channels).contains(afChannel)) runAfChannelBox.setSelectedItem(afChannel);
+        runRedChannelBox.removeAllItems();
+        for (String i : channels_with_none) runRedChannelBox.addItem(i);
+        if (Arrays.asList(channels_with_none).contains(redChannel)) runRedChannelBox.setSelectedItem(redChannel);
+
+
+    }
 
 
     private void runRun() {

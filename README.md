@@ -1,6 +1,15 @@
-# af_correction_fiji_plugin
+# Autofluorescence correction (FIJI plugin)
 
-Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
+[![CC BY 4.0][cc-by-shield]][cc-by]
+
+
+## Instructions
+
+Please see the user guide (af_correction_user_guide.pdf) for full instructions on installation and use. 
+
+## References
+
+## License
 
 This work is licensed under a
 [Creative Commons Attribution 4.0 International License][cc-by].

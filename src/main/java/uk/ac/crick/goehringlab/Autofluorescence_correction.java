@@ -17,6 +17,7 @@ import ij.measure.ResultsTable;
 import ij.plugin.ChannelSplitter;
 import ij.plugin.ImageCalculator;
 import ij.plugin.frame.PlugInDialog;
+import ij.process.ImageProcessor;
 
 import Jama.Matrix;
 import Jama.QRDecomposition;
@@ -276,7 +277,9 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         panel.add(calRunButton);
         panel.add(calResidsButton);
         panel.add(calTabButton);
+        panel.add(new JLabel(""));
         panel.add(calSaveButton);
+
 
         // Finish panel
         calFrame.add(panel);
@@ -579,12 +582,12 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
             // Open image
             ImagePlus imp = WindowManager.getImage(calHashTable.get(imageName));
 
-            // Checking image bit depth
-            int bitDepth = imp.getBitDepth();
-            if (bitDepth != 16) {
-                IJ.showMessage("ERROR: 16-bit images required");
-                return;
-            }
+//            // Checking image bit depth
+//            int bitDepth = imp.getBitDepth();
+//            if (bitDepth != 16) {
+//                IJ.showMessage("ERROR: 16-bit images required");
+//                return;
+//            }
 
             // Get ROI
             if (calRoiCheckbox.isSelected()) {
@@ -793,21 +796,27 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         List<Double> afPixelVals = new ArrayList<>();
         List<Double> afGausPixelVals = new ArrayList<>();
 
-        // Fill results containers
+        // Get ImageProcessor
+        ImageProcessor flImProc = flImp.getProcessor();
+        ImageProcessor flImProc2 = flImp2.getProcessor();
+        ImageProcessor afImProc = afImp.getProcessor();
+        ImageProcessor afImProc2 = afImp2.getProcessor();
+
+        // Collect pixel values
         for (int y = 0; y < flImp.getDimensions()[1]; y++) {
             for (int x = 0; x < flImp.getDimensions()[0]; x++) {
                 if (roi.contains(x, y)) {
                     n += 1;
                     xc.add(x);
                     yc.add(y);
-                    flPixelVals.add((double) flImp.getPixel(x, y)[0]);
-                    flGausPixelVals.add((double) flImp2.getPixel(x, y)[0]);
-                    afPixelVals.add((double) afImp.getPixel(x, y)[0]);
-                    afGausPixelVals.add((double) afImp2.getPixel(x, y)[0]);
+                    flPixelVals.add((double) flImProc.getPixelValue(x, y));
+                    flGausPixelVals.add((double) flImProc2.getPixelValue(x, y));
+                    afPixelVals.add((double) afImProc.getPixelValue(x, y));
+                    afGausPixelVals.add((double) afImProc2.getPixelValue(x, y));
 
-                    // Check if saturated
-                    if (flImp.getPixel(x, y)[0] >= 65535) flSatCount += 1;
-                    if (afImp.getPixel(x, y)[0] >= 65535) afSatCount += 1;
+//                    // Check if saturated
+//                    if (flImp.getPixel(x, y)[0] == 65535) flSatCount += 1;
+//                    if (afImp.getPixel(x, y)[0] == 65535) afSatCount += 1;
 
                 }
             }
@@ -847,24 +856,32 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         List<Double> redPixelVals = new ArrayList<>();
         List<Double> redGausPixelVals = new ArrayList<>();
 
-        // Fill results containers
+        // Get ImageProcessor
+        ImageProcessor flImProc = flImp.getProcessor();
+        ImageProcessor flImProc2 = flImp2.getProcessor();
+        ImageProcessor afImProc = afImp.getProcessor();
+        ImageProcessor afImProc2 = afImp2.getProcessor();
+        ImageProcessor redImProc = redImp.getProcessor();
+        ImageProcessor redImProc2 = redImp2.getProcessor();
+
+        // Collect pixel values
         for (int y = 0; y < flImp.getDimensions()[1]; y++) {
             for (int x = 0; x < flImp.getDimensions()[0]; x++) {
                 if (roi.contains(x, y)) {
                     n += 1;
                     xc.add(x);
                     yc.add(y);
-                    flPixelVals.add((double) flImp.getPixel(x, y)[0]);
-                    flGausPixelVals.add((double) flImp2.getPixel(x, y)[0]);
-                    afPixelVals.add((double) afImp.getPixel(x, y)[0]);
-                    afGausPixelVals.add((double) afImp2.getPixel(x, y)[0]);
-                    redPixelVals.add((double) redImp.getPixel(x, y)[0]);
-                    redGausPixelVals.add((double) redImp2.getPixel(x, y)[0]);
+                    flPixelVals.add((double) flImProc.getPixelValue(x, y));
+                    flGausPixelVals.add((double) flImProc2.getPixelValue(x, y));
+                    afPixelVals.add((double) afImProc.getPixelValue(x, y));
+                    afGausPixelVals.add((double) afImProc2.getPixelValue(x, y));
+                    redPixelVals.add((double) redImProc.getPixelValue(x, y));
+                    redGausPixelVals.add((double) redImProc2.getPixelValue(x, y));
 
-                    // Check if saturated
-                    if (flImp.getPixel(x, y)[0] >= 65535) flSatCount += 1;
-                    if (afImp.getPixel(x, y)[0] >= 65535) afSatCount += 1;
-                    if (redImp.getPixel(x, y)[0] >= 65535) redSatCount += 1;
+//                    // Check if saturated
+//                    if (flImp.getPixel(x, y)[0] == 65535) flSatCount += 1;
+//                    if (afImp.getPixel(x, y)[0] == 65535) afSatCount += 1;
+//                    if (redImp.getPixel(x, y)[0] == 65535) redSatCount += 1;
 
                 }
             }
@@ -1275,12 +1292,12 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         // Duplicate image
         ImagePlus imp2 = imp.duplicate();
 
-        // Checking image bit depth
-        int bitDepth = imp2.getBitDepth();
-        if (bitDepth != 16) {
-            IJ.showMessage("ERROR: 16-bit image required");
-            return;
-        }
+//        // Checking image bit depth
+//        int bitDepth = imp2.getBitDepth();
+//        if (bitDepth != 16) {
+//            IJ.showMessage("ERROR: 16-bit image required");
+//            return;
+//        }
 
         // Run correction
         if (Objects.equals(runRedChannel, "<None>"))

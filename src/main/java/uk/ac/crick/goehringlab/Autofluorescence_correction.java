@@ -67,6 +67,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
     private JTextField calGaussianText;
 
     // Buttons
+    private Button calRefreshButton;
     private Button calRunButton;
     private Button calResidsButton;
     private Button calTabButton;
@@ -178,8 +179,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         for (int i = 0; i < calAllImageTitles.length; i++) {
             for (int j = 0; j < calAllImageTitles.length; j++) {
                 if (i > j && Objects.equals(calAllImageTitles[i], calAllImageTitles[j])) {
-                    IJ.showMessage("WARNING: Multiple images with name " + calAllImageTitles[i] +
-                            ". May cause ambiguities.");
+                    IJ.showMessage("WARNING: Multiple images with name " + calAllImageTitles[i]);
                 }
             }
         }
@@ -229,6 +229,11 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         JLabel gaussianLabel = new JLabel("Gaussian blur (radius):", SwingConstants.RIGHT);
         calGaussianText = new JTextField("2", 4);
 
+        // Refresh
+        calRefreshButton = new Button("Refresh image list");
+        calRefreshButton.addActionListener(this);
+        calRefreshButton.setEnabled(true);
+
         // Run calibration
         calRunButton = new Button("Run calibration");
         calRunButton.addActionListener(this);
@@ -267,6 +272,7 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
         panel.add(calRoiCheckbox);
         panel.add(gaussianLabel);
         panel.add(calGaussianText);
+        panel.add(calRefreshButton);
         panel.add(calRunButton);
         panel.add(calResidsButton);
         panel.add(calTabButton);
@@ -400,10 +406,13 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
             else
                 calFrame.toFront();
 
+        // Refresh
+        if (source == calRefreshButton)
+            calRefresh();
+
         // Run calibration
-        if (source == calRunButton) {
+        if (source == calRunButton)
             calRun();
-        }
 
         // Show residuals
         if (source == calResidsButton) {
@@ -450,6 +459,54 @@ public class Autofluorescence_correction extends PlugInDialog implements ActionL
 
 
     /////////////// CALIBRATION FUNCTIONS //////////////
+
+    private void calRefresh() {
+
+        // Checking windows are open
+        int[] windowList = WindowManager.getIDList();
+        if (windowList == null) {
+            IJ.showMessage("No images open!");
+            return;
+        }
+
+        // Save old image titles list
+        String[] allImageTitlesOld = calAllImageTitles.clone();
+
+        // Save list of selected images
+        List<String> selectedImageTitles = new ArrayList<>();
+        for (int i = 0; i < calAllImageTitles.length; i++) {
+            if (calImageCheckboxes[i].isSelected()) {
+                selectedImageTitles.add(calAllImageTitles[i]);
+            }
+        }
+
+        // Save parameters
+        String flChannel = (String) calFlChannelBox.getSelectedItem();
+        String afChannel = (String) calAfChannelBox.getSelectedItem();
+        String redChannel = (String) calRedChannelBox.getSelectedItem();
+        boolean useRoi = calRoiCheckbox.isSelected();
+        String gaus = calGaussianText.getText();
+
+        // Close window
+        calFrame.dispatchEvent(new WindowEvent(calFrame, WindowEvent.WINDOW_CLOSING));
+
+        // Open window
+        calWindowSetup();
+
+        // Toggle image list
+        for (int i = 0; i < calAllImageTitles.length; i++) {
+            calImageCheckboxes[i].setSelected(selectedImageTitles.contains(calAllImageTitles[i]) ||
+                    !Arrays.asList(allImageTitlesOld).contains(calAllImageTitles[i]));
+        }
+
+        // Set parameters
+        calFlChannelBox.setSelectedItem(flChannel);
+        calAfChannelBox.setSelectedItem(afChannel);
+        calRedChannelBox.setSelectedItem(redChannel);
+        calRoiCheckbox.setSelected(useRoi);
+        calGaussianText.setText(gaus);
+    }
+
 
     private void calRun() {
 

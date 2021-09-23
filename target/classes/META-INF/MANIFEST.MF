@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Implementation-Build: 8849d77be9750cc9b035f66e3840e432d6c7ee84
+Implementation-Build: 3341f057f4e56c9449d37c1462ff062e4edcab52
 Class-Path: ij-1.52i.jar jama-1.0.3.jar
 Created-By: MiniMaven
 Main-Class: uk.ac.crick.goehringlab.Autofluorescence_correction

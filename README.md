@@ -7,7 +7,9 @@
 
 Please see the user guide (af_correction_user_guide.pdf) for full instructions on installation and use. 
 
-## References
+## Citation
+
+If you use this program as part of a publication, please cite the following reference: ???
 
 ## License
 

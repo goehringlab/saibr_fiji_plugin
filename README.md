@@ -5,7 +5,7 @@
 
 ## Instructions
 
-Please see the user guide (af_correction_user_guide.pdf) for full instructions on installation and use. 
+Please see the [user guide](af_correction_user_guide.pdf) for full instructions on installation and use. 
 
 ## Citation
 

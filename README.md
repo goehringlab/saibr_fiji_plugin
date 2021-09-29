@@ -3,6 +3,9 @@
 [![CC BY 4.0][cc-by-shield]][cc-by]
 
 
+![image](fig1.png)
+
+
 ## Instructions
 
 Please see the [user guide](af_correction_user_guide.pdf) for full instructions on installation and use. 

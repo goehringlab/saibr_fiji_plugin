@@ -2,9 +2,12 @@
 
 [![CC BY 4.0][cc-by-shield]][cc-by]
 
+A simple GUI-based FIJI plugin for performing autofluorescence correction on fluorescence microscopy images.
 
 ![image](fig1.png)
 
+The method relies on a multi-channel imaging approach, which is described in the following paper: ???.
+Please read the paper to familiarise yourself with the method before using this plugin.
 
 ## Instructions
 

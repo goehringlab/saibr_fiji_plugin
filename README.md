@@ -3,7 +3,7 @@
 [![CC BY 4.0][cc-by-shield]][cc-by]
 
 A simple GUI-based FIJI plugin for performing autofluorescence correction on fluorescence microscopy images.
-A robust, platform-agnostic tool, especially useful for resolving of low-level green fluorophores in highly autofluorescent cells and tissues.
+A robust, platform-agnostic tool, especially useful for resolving low-level green fluorophores in highly autofluorescent cells and tissues.
 
 ![image](fig1.png)
 

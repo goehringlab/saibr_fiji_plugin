@@ -1,4 +1,4 @@
-## SAIBR: **S**pectral **A**utofluorescence **I**mage correction **B**y **R**egression
+## SAIBR: Spectral Autofluorescence Image correction By Regression
 
 [![CC BY 4.0][cc-by-shield]][cc-by]
 
@@ -12,7 +12,7 @@ Please read the paper to familiarise yourself with the method before using this 
 
 ## Instructions
 
-Please see the [user guide](af_correction_user_guide.pdf) for full instructions on installation and use. 
+Please see the [user guide](saibr_user_guide.pdf) for full instructions on installation and use. 
 
 ## Citation
 

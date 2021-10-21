@@ -13,12 +13,13 @@
 	</parent>
 
 	<groupId>uk.ac.crick.goehringlab</groupId>
-	<artifactId>Autofluorescence_correction</artifactId>
+	<artifactId>saibr_beta</artifactId>
 	<version>0.0.0</version>
 
-	<name>Autofluorescence correction</name>
-	<description>_</description>
-	<url>_</url>
+	<name>SAIBR</name>
+	<description>A simple GUI-based FIJI plugin for performing spectral autofluorescence correction on fluorescence
+		microscopy images</description>
+	<url>https://github.com/tsmbland/saibr_fiji_plugin</url>
 	<inceptionYear>2021</inceptionYear>
 	<organization>
 		<name>Goehring lab</name>
@@ -27,7 +28,7 @@
 
 	<licenses>
 		<license>
-			<name>_</name>
+			<name>Creative Commons Attribution 4.0 International</name>
 		</license>
 	</licenses>
 
@@ -48,8 +49,8 @@
 
 	<properties>
 		<package-name>uk.ac.crick.goehringlab</package-name>
-		<main-class>uk.ac.crick.goehringlab.Autofluorescence_correction</main-class>
-		<license.licenseName>_</license.licenseName>
+		<main-class>uk.ac.crick.goehringlab.saibr</main-class>
+		<license.licenseName>Creative Commons Attribution 4.0 International</license.licenseName>
 	</properties>
 
 	<dependencies>

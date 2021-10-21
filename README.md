@@ -1,4 +1,4 @@
-# SAIBR: **S**pectral **A**utofluorescence **I**mage correction **B**y **R**egression
+## SAIBR: **S**pectral **A**utofluorescence **I**mage correction **B**y **R**egression
 
 [![CC BY 4.0][cc-by-shield]][cc-by]
 

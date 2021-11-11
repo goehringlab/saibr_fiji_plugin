@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Implementation-Build: 9477a78710e03ba0112bea48a0822fcc4bf08431
+Implementation-Build: 8ee8ddec37980676de5766edda9e205382b986cb
 Class-Path: ij-1.52i.jar jama-1.0.3.jar
 Created-By: MiniMaven
 Main-Class: uk.ac.crick.goehringlab.saibr

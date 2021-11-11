@@ -349,11 +349,11 @@ public class saibr extends PlugInDialog implements ActionListener {
 
         // AF calibration
         JLabel cLabel = new JLabel("c:", SwingConstants.RIGHT);
-        runCText = new JTextField(String.format("%.3f", cal_c), 4);
+        runCText = new JTextField(String.format(Locale.UK, "%.3f", cal_c), 4);
         JLabel m1Label = new JLabel("m1:", SwingConstants.RIGHT);
-        runM1Text = new JTextField(String.format("%.3f", cal_m1), 4);
+        runM1Text = new JTextField(String.format(Locale.UK, "%.3f", cal_m1), 4);
         JLabel m2Label = new JLabel("m2:", SwingConstants.RIGHT);
-        runM2Text = new JTextField(String.format("%.3f", cal_m2), 4);
+        runM2Text = new JTextField(String.format(Locale.UK, "%.3f", cal_m2), 4);
 
         // Refresh
         runRefreshButton = new Button("Refresh image list");
@@ -1032,8 +1032,9 @@ public class saibr extends PlugInDialog implements ActionListener {
 
         // Add equation
         plot.addLabel(0.05, 0.1, "GFP channel = c + m1 * (AF channel)\nc = " +
-                String.format("%.04f", cal_c) + "\nm1 = " + String.format("%.04f", cal_m1) +
-                "\n \nR² = " + String.format("%.04f", R2));
+                String.format(Locale.UK, "%.04f", cal_c) + "\nm1 = " +
+                String.format(Locale.UK, "%.04f", cal_m1) +
+                "\n \nR² = " + String.format(Locale.UK, "%.04f", R2));
 
         // Show
         plot.show();
@@ -1076,8 +1077,10 @@ public class saibr extends PlugInDialog implements ActionListener {
 
         // Add equation
         plot.addLabel(0.05, 0.1, "GFP channel = c + m1 * (AF channel) + m2 * (RFP channel)\nc = " +
-                String.format("%.04f", cal_c) + "\nm1 = " + String.format("%.04f", cal_m1) +
-                "\nm2 = " + String.format("%.04f", cal_m2) + "\n \nR² = " + String.format("%.04f", R2));
+                String.format(Locale.UK ,"%.04f", cal_c) + "\nm1 = " +
+                String.format(Locale.UK ,"%.04f", cal_m1) +"\nm2 = " +
+                String.format(Locale.UK ,"%.04f", cal_m2) + "\n \nR² = " +
+                String.format(Locale.UK ,"%.04f", R2));
 
         // Show
         plot.show();
@@ -1396,7 +1399,6 @@ public class saibr extends PlugInDialog implements ActionListener {
 
 To do:
 Ability to run with macros
-For calibration: if it's a movie, use currently selected channel instead of first channel
 Force menu window to front when cal/run windows are closed
 Rename variables/functions and tidy up
 Thicken line on plot

@@ -581,6 +581,7 @@ public class saibr extends PlugInDialog implements ActionListener {
 
             // Open image
             ImagePlus imp = WindowManager.getImage(calHashTable.get(imageName));
+            int currentT = imp.getT();
 
 //            // Checking image bit depth
 //            int bitDepth = imp.getBitDepth();
@@ -610,6 +611,7 @@ public class saibr extends PlugInDialog implements ActionListener {
 
             // Copy image
             ImagePlus imp2 = imp.duplicate();
+            imp2.setT(currentT);
 
             // Save image
             calImages[i] = imp2;
@@ -774,6 +776,11 @@ public class saibr extends PlugInDialog implements ActionListener {
 
     private calEmbryoData calGetPixels2(ImagePlus imp, Roi roi) {
 
+        // If movie, just use currently selected frame
+        int nFrames = imp.getNFrames();
+        if (nFrames > 1)
+            IJ.run(imp, "Reduce Dimensionality...", "channels");
+
         // Get channels
         ImagePlus[] channels = ChannelSplitter.split(imp);
         ImagePlus flImp = channels[calChannelsHashTable.get(calFlChannel)];
@@ -827,6 +834,11 @@ public class saibr extends PlugInDialog implements ActionListener {
 
 
     private calEmbryoData calGetPixels3(ImagePlus imp, Roi roi) {
+
+        // If movie, just use currently selected frame
+        int nFrames = imp.getNFrames();
+        if (nFrames > 1)
+            IJ.run(imp, "Reduce Dimensionality...", "channels");
 
         // Get channels
         ImagePlus[] channels = ChannelSplitter.split(imp);
@@ -1389,6 +1401,7 @@ Force menu window to front when cal/run windows are closed
 Rename variables/functions and tidy up
 Thicken line on plot
 If calibrate window is closed and reopened, load previous configurations
+For run, add 'All' option to image list
 
 Bugs:
 Will crash if image is closed and subsequently reopened (window ID doesn't match up with name)

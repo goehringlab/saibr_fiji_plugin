@@ -130,12 +130,12 @@ public class saibr extends PlugInDialog implements ActionListener {
         // Panels
 
         // Calibrate
-        menuCalButton = new Button("Calibrate...");
+        menuCalButton = new Button("    Calibrate...    ");
         menuCalButton.addActionListener(this);
         menuCalButton.setEnabled(true);
 
         // Run correction
-        menuRunButton = new Button("Run correction...");
+        menuRunButton = new Button("    Run correction...    ");
         menuRunButton.addActionListener(this);
         menuRunButton.setEnabled(true);
 

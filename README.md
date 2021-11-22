@@ -2,12 +2,14 @@
 
 [![CC BY 4.0][cc-by-shield]][cc-by]
 
-A simple GUI-based FIJI plugin for performing spectral autofluorescence correction on fluorescence microscopy images.
-A robust, platform-agnostic tool, especially useful for resolving and quantifying low-level green fluorophores in highly autofluorescent cells and tissues.
+This plugin provides an easy-to-use, GUI-based implementation of SAIBR (Spectral Autofluorescence Image correction By Regression): a simple, platform-independent protocol for spectral autofluorescence correction, especially useful for resolving and quantifying low-level green fluorophores in highly autofluorescent cells and tissues.
 
-![image](fig1.png)
+![image](figure1.png)
 
-The method relies on a multi-channel imaging approach, which is described in the following paper: ???.
+The method relies on a multi-channel imaging approach, which we describe in full in the following paper: 
+
+???
+
 Please read the paper to familiarise yourself with the method before using this plugin.
 
 ## Instructions

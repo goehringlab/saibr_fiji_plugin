@@ -26,7 +26,7 @@ import Jama.QRDecomposition;
 public class saibr extends PlugInDialog implements ActionListener {
 
     public saibr() {
-        super("SAIBR (beta)");
+        super("SAIBR");
     }
 
 

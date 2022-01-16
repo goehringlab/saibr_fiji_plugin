@@ -54,7 +54,7 @@ public class saibr extends PlugInDialog implements ActionListener {
     private JFrame calFrame;
 
     // Image names
-    private String[] calAllImageTitles;
+    private List<String> calAllImageTitles;
     private List<String> calSelectedImageTitles;
     private Hashtable<String, Integer> calHashTable = new Hashtable<>();
     private Hashtable<String, Integer> calChannelsHashTable = new Hashtable<>();
@@ -153,10 +153,32 @@ public class saibr extends PlugInDialog implements ActionListener {
 
     private void calWindowSetup() {
 
-        // Check that some images are open
+        // Get list of windows
         int[] windowList = WindowManager.getIDList();
+
+        // Check that some windows are open
         if (windowList == null) {
             IJ.showMessage("No images open!");
+            return;
+        }
+
+        // Get names of multichannel images
+        calAllImageTitles = new ArrayList<>();
+        calHashTable = new Hashtable<>();
+        int maxChannels = 0;
+        for (int k : windowList) {
+            ImagePlus imp = WindowManager.getImage(k);
+            int nchan = imp.getDimensions()[2];
+            if (nchan > 1) {
+                calAllImageTitles.add(imp.getTitle());
+                maxChannels = Math.max(nchan, maxChannels);
+                calHashTable.put(imp.getTitle(), k);
+            }
+        }
+
+        // Check that some multichannel images are open
+        if (calAllImageTitles.size() == 0) {
+            IJ.showMessage("No multichannel images open!");
             return;
         }
 
@@ -165,22 +187,11 @@ public class saibr extends PlugInDialog implements ActionListener {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0, 2, 10, 5));
 
-        // Image titles
-        calAllImageTitles = new String[windowList.length];
-        calHashTable = new Hashtable<>();
-        int maxChannels = 0;
-        for (int i = 0; i < windowList.length; i++) {
-            ImagePlus imp = WindowManager.getImage(windowList[i]);
-            calAllImageTitles[i] = imp.getTitle();
-            maxChannels = Math.max(imp.getDimensions()[2], maxChannels);
-            calHashTable.put(calAllImageTitles[i], windowList[i]);
-        }
-
         // Check for ambiguities
-        for (int i = 0; i < calAllImageTitles.length; i++) {
-            for (int j = 0; j < calAllImageTitles.length; j++) {
-                if (i > j && Objects.equals(calAllImageTitles[i], calAllImageTitles[j])) {
-                    IJ.showMessage("WARNING: Multiple images with name " + calAllImageTitles[i]);
+        for (int i = 0; i < calAllImageTitles.size(); i++) {
+            for (int j = 0; j < calAllImageTitles.size(); j++) {
+                if (i > j && Objects.equals(calAllImageTitles.get(i), calAllImageTitles.get(j))) {
+                    IJ.showMessage("WARNING: Multiple images with name " + calAllImageTitles.get(i));
                 }
             }
         }
@@ -201,9 +212,9 @@ public class saibr extends PlugInDialog implements ActionListener {
 
         // Images
         JLabel imageLabel = new JLabel("Select image(s):", SwingConstants.RIGHT);
-        calImageCheckboxes = new JCheckBox[calAllImageTitles.length];
-        for (int i = 0; i < calAllImageTitles.length; i++) {
-            calImageCheckboxes[i] = new JCheckBox(calAllImageTitles[i]);
+        calImageCheckboxes = new JCheckBox[calAllImageTitles.size()];
+        for (int i = 0; i < calAllImageTitles.size(); i++) {
+            calImageCheckboxes[i] = new JCheckBox(calAllImageTitles.get(i));
             calImageCheckboxes[i].setSelected(true);
         }
 
@@ -291,29 +302,42 @@ public class saibr extends PlugInDialog implements ActionListener {
 
 
     private void runWindowSetup() {
-        // First check that some images are open
+
+        // Get list of windows
         int[] windowList = WindowManager.getIDList();
+
+        // Check that some windows are open
         if (windowList == null) {
             IJ.showMessage("No images open!");
             return;
         }
+
+        // Get names of multichannel images
+        ArrayList<String> imageTitles = new ArrayList<>();
+        runHashTable = new Hashtable<>();
+        int maxChannels = 0;
+        for (int j : windowList) {
+            ImagePlus imp = WindowManager.getImage(j);
+            int nchan = imp.getDimensions()[2];
+            if (nchan > 1) {
+                imageTitles.add(imp.getTitle());
+                maxChannels = Math.max(nchan, maxChannels);
+                runHashTable.put(imp.getTitle(), j);
+            }
+        }
+
+        // Check that some multichannel images are open
+        if (imageTitles.size() == 0) {
+            IJ.showMessage("No multichannel images open!");
+            return;
+        }
+
 
         // Set up window
         // Frame
         runFrame = new JFrame("Autofluorescence correction");
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0, 2, 10, 5));
-
-        // Image titles
-        String[] imageTitles = new String[windowList.length];
-        runHashTable = new Hashtable<>();
-        int maxChannels = 0;
-        for (int i = 0; i < windowList.length; i++) {
-            ImagePlus imp = WindowManager.getImage(windowList[i]);
-            imageTitles[i] = imp.getTitle();
-            maxChannels = Math.max(imp.getDimensions()[2], maxChannels);
-            runHashTable.put(imageTitles[i], windowList[i]);
-        }
 
         // Channels list
         String[] channels = new String[maxChannels];
@@ -330,7 +354,8 @@ public class saibr extends PlugInDialog implements ActionListener {
 
         // Image
         JLabel imageLabel = new JLabel("Image:", SwingConstants.RIGHT);
-        runImageBox = new JComboBox<>(imageTitles);
+        String[] array = imageTitles.toArray(new String[0]);
+        runImageBox = new JComboBox<>(array);
 
         // Fluorophore channel
         JLabel flChannelLabel = new JLabel("GFP channel:", SwingConstants.RIGHT);
@@ -473,13 +498,13 @@ public class saibr extends PlugInDialog implements ActionListener {
         }
 
         // Save old image titles list
-        String[] allImageTitlesOld = calAllImageTitles.clone();
+        ArrayList<String> allImageTitlesOld = new ArrayList<>(calAllImageTitles);
 
         // Save list of selected images
         List<String> selectedImageTitles = new ArrayList<>();
-        for (int i = 0; i < calAllImageTitles.length; i++) {
+        for (int i = 0; i < calAllImageTitles.size(); i++) {
             if (calImageCheckboxes[i].isSelected()) {
-                selectedImageTitles.add(calAllImageTitles[i]);
+                selectedImageTitles.add(calAllImageTitles.get(i));
             }
         }
 
@@ -497,9 +522,9 @@ public class saibr extends PlugInDialog implements ActionListener {
         calWindowSetup();
 
         // Toggle image list
-        for (int i = 0; i < calAllImageTitles.length; i++) {
-            calImageCheckboxes[i].setSelected(selectedImageTitles.contains(calAllImageTitles[i]) ||
-                    !Arrays.asList(allImageTitlesOld).contains(calAllImageTitles[i]));
+        for (int i = 0; i < calAllImageTitles.size(); i++) {
+            calImageCheckboxes[i].setSelected(selectedImageTitles.contains(calAllImageTitles.get(i)) ||
+                    !allImageTitlesOld.contains(calAllImageTitles.get(i)));
         }
 
         // Set parameters
@@ -549,9 +574,9 @@ public class saibr extends PlugInDialog implements ActionListener {
 
         // List of selected images
         calSelectedImageTitles = new ArrayList<>();
-        for (int i = 0; i < calAllImageTitles.length; i++) {
+        for (int i = 0; i < calAllImageTitles.size(); i++) {
             if (calImageCheckboxes[i].isSelected()) {
-                calSelectedImageTitles.add(calAllImageTitles[i]);
+                calSelectedImageTitles.add(calAllImageTitles.get(i));
             }
         }
 
@@ -786,6 +811,10 @@ public class saibr extends PlugInDialog implements ActionListener {
         ImagePlus flImp = channels[calChannelsHashTable.get(calFlChannel)];
         ImagePlus afImp = channels[calChannelsHashTable.get(calAfChannel)];
 
+        // Convert to 32-bit
+        IJ.run(flImp, "32-bit", "");
+        IJ.run(afImp, "32-bit", "");
+
         // Process channels
         ImagePlus flImp2 = flImp.duplicate();
         IJ.run(flImp2, "Gaussian Blur...", "sigma=" + calGaussianText.getText());
@@ -845,6 +874,11 @@ public class saibr extends PlugInDialog implements ActionListener {
         ImagePlus flImp = channels[calChannelsHashTable.get(calFlChannel)];
         ImagePlus afImp = channels[calChannelsHashTable.get(calAfChannel)];
         ImagePlus redImp = channels[calChannelsHashTable.get(calRedChannel)];
+
+        // Convert to 32-bit
+        IJ.run(flImp, "32-bit", "");
+        IJ.run(afImp, "32-bit", "");
+        IJ.run(redImp, "32-bit", "");
 
         // Process channels
         ImagePlus flImp2 = flImp.duplicate();
@@ -1077,10 +1111,10 @@ public class saibr extends PlugInDialog implements ActionListener {
 
         // Add equation
         plot.addLabel(0.05, 0.1, "GFP channel = c + m1 * (AF channel) + m2 * (RFP channel)\nc = " +
-                String.format(Locale.UK ,"%.04f", cal_c) + "\nm1 = " +
-                String.format(Locale.UK ,"%.04f", cal_m1) +"\nm2 = " +
-                String.format(Locale.UK ,"%.04f", cal_m2) + "\n \nR² = " +
-                String.format(Locale.UK ,"%.04f", R2));
+                String.format(Locale.UK, "%.04f", cal_c) + "\nm1 = " +
+                String.format(Locale.UK, "%.04f", cal_m1) + "\nm2 = " +
+                String.format(Locale.UK, "%.04f", cal_m2) + "\n \nR² = " +
+                String.format(Locale.UK, "%.04f", R2));
 
         // Show
         plot.show();
@@ -1215,22 +1249,34 @@ public class saibr extends PlugInDialog implements ActionListener {
         String afChannel = (String) runAfChannelBox.getSelectedItem();
         String redChannel = (String) runRedChannelBox.getSelectedItem();
 
-        // Checking windows are open
+
+        // Get list of windows
         int[] windowList = WindowManager.getIDList();
+
+        // Check that some windows are open
         if (windowList == null) {
             IJ.showMessage("No images open!");
             return;
         }
 
-        // Image titles
-        String[] imageTitles = new String[windowList.length];
+        // Get names of multichannel images
+        ArrayList<String> imageTitles = new ArrayList<>();
         runHashTable = new Hashtable<>();
         int maxChannels = 0;
-        for (int i = 0; i < windowList.length; i++) {
-            ImagePlus imp = WindowManager.getImage(windowList[i]);
-            imageTitles[i] = imp.getTitle();
-            maxChannels = Math.max(imp.getDimensions()[2], maxChannels);
-            runHashTable.put(imageTitles[i], windowList[i]);
+        for (int j : windowList) {
+            ImagePlus imp = WindowManager.getImage(j);
+            int nchan = imp.getDimensions()[2];
+            if (nchan > 1) {
+                imageTitles.add(imp.getTitle());
+                maxChannels = Math.max(nchan, maxChannels);
+                runHashTable.put(imp.getTitle(), j);
+            }
+        }
+
+        // Check that some multichannel images are open
+        if (imageTitles.size() == 0) {
+            IJ.showMessage("No multichannel images open!");
+            return;
         }
 
         // Channels list
@@ -1247,7 +1293,7 @@ public class saibr extends PlugInDialog implements ActionListener {
         // Update image list
         runImageBox.removeAllItems();
         for (String i : imageTitles) runImageBox.addItem(i);
-        if (Arrays.asList(imageTitles).contains(imageName)) runImageBox.setSelectedItem(imageName);
+        if (imageTitles.contains(imageName)) runImageBox.setSelectedItem(imageName);
 
         // Update channels list
         runFlChannelBox.removeAllItems();

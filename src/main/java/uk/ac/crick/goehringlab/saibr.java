@@ -219,20 +219,20 @@ public class saibr extends PlugInDialog implements ActionListener {
         }
 
         // Fluorophore channel
-        JLabel flChannelLabel = new JLabel("GFP channel:", SwingConstants.RIGHT);
+        JLabel flChannelLabel = new JLabel("Primary channel:", SwingConstants.RIGHT);
         calFlChannelBox = new JComboBox<>(channels);
 
         // Autofluorescence channel
-        JLabel afChannelLabel = new JLabel("AF channel:", SwingConstants.RIGHT);
+        JLabel afChannelLabel = new JLabel("Predictor channel 1 (AF):", SwingConstants.RIGHT);
         calAfChannelBox = new JComboBox<>(channels);
 
         // Red fluorophore channel (optional)
-        JLabel redChannelLabel = new JLabel("RFP channel (optional):", SwingConstants.RIGHT);
+        JLabel redChannelLabel = new JLabel("Predictor channel 2 (optional):", SwingConstants.RIGHT);
         calRedChannelBox = new JComboBox<>(channels_with_none);
 
         // ROI
         JLabel roiLabel = new JLabel("Use ROI(s):", SwingConstants.RIGHT);
-        calRoiCheckbox = new JCheckBox("Specify ROI on image(s)");
+        calRoiCheckbox = new JCheckBox("Specify ROI(s) on image(s)");
         Font f = calRoiCheckbox.getFont();
         calRoiCheckbox.setFont(f.deriveFont(f.getStyle() | Font.ITALIC));
         calRoiCheckbox.setSelected(true);
@@ -358,17 +358,17 @@ public class saibr extends PlugInDialog implements ActionListener {
         runImageBox = new JComboBox<>(array);
 
         // Fluorophore channel
-        JLabel flChannelLabel = new JLabel("GFP channel:", SwingConstants.RIGHT);
+        JLabel flChannelLabel = new JLabel("Primary channel:", SwingConstants.RIGHT);
         runFlChannelBox = new JComboBox<>(channels);
         runFlChannelBox.setSelectedItem(calFlChannel);
 
         // Autofluorescence channel
-        JLabel afChannelLabel = new JLabel("AF channel:", SwingConstants.RIGHT);
+        JLabel afChannelLabel = new JLabel("Predictor channel 1 (AF):", SwingConstants.RIGHT);
         runAfChannelBox = new JComboBox<>(channels);
         runAfChannelBox.setSelectedItem(calAfChannel);
 
         // Red fluorophore channel (optional)
-        JLabel redChannelLabel = new JLabel("RFP channel (optional):", SwingConstants.RIGHT);
+        JLabel redChannelLabel = new JLabel("Predictor channel 2 (optional):", SwingConstants.RIGHT);
         runRedChannelBox = new JComboBox<>(channels_with_none);
         runRedChannelBox.setSelectedItem(calRedChannel);
 
@@ -550,15 +550,15 @@ public class saibr extends PlugInDialog implements ActionListener {
 
         // Checking channel requirements
         if (Objects.equals(calFlChannel, calAfChannel)) {
-            IJ.showMessage("ERROR: GFP and AF channels must be different");
+            IJ.showMessage("ERROR: Primary and Predictor 1 channels must be different");
             return;
         }
         if (Objects.equals(calAfChannel, calRedChannel)) {
-            IJ.showMessage("ERROR: AF and RFP channels must be different");
+            IJ.showMessage("ERROR: Predictor 1 and Predictor 2 channels must be different");
             return;
         }
         if (Objects.equals(calRedChannel, calFlChannel)) {
-            IJ.showMessage("ERROR: GFP and RFP channels must be different");
+            IJ.showMessage("ERROR: Primary and Predictor 2 channels must be different");
             return;
         }
 
@@ -658,15 +658,15 @@ public class saibr extends PlugInDialog implements ActionListener {
 
             // Warning for saturated pixels
             if (data.flSatCount > 0) {
-                IJ.showMessage("WARNING: " + data.flSatCount + " saturated pixels in GFP channel of image "
+                IJ.showMessage("WARNING: " + data.flSatCount + " saturated pixels in Primary channel of image "
                         + calSelectedImageTitles.get(i));
             }
             if (data.afSatCount > 0) {
-                IJ.showMessage("WARNING: " + data.afSatCount + " saturated pixels in AF channel of image "
+                IJ.showMessage("WARNING: " + data.afSatCount + " saturated pixels in Predictor channel 1 of image "
                         + calSelectedImageTitles.get(i));
             }
             if (data.redSatCount > 0) {
-                IJ.showMessage("WARNING: " + data.redSatCount + " saturated pixels in RFP channel of image "
+                IJ.showMessage("WARNING: " + data.redSatCount + " saturated pixels in Predictor channel 2 of image "
                         + calSelectedImageTitles.get(i));
             }
 
@@ -1034,7 +1034,7 @@ public class saibr extends PlugInDialog implements ActionListener {
     private void calPlotRegression2(calEmbryoData[] allEmbryoData) {
 
         // Set up plot
-        Plot plot = new Plot("Linear model", "Linear model: c + m1 * (AF channel)", "GFP channel");
+        Plot plot = new Plot("Linear model", "Linear model: c + m1 * (Predictor 1)", "Primary channel");
         Color[] colours = {Color.blue, Color.green, Color.red, Color.cyan, Color.magenta, Color.orange, Color.pink,
                 Color.gray, Color.lightGray, Color.gray};
 
@@ -1065,7 +1065,7 @@ public class saibr extends PlugInDialog implements ActionListener {
         plot.addPoints(new double[]{0, 65536}, new double[]{0, 65536}, Plot.LINE);
 
         // Add equation
-        plot.addLabel(0.05, 0.1, "GFP channel = c + m1 * (AF channel)\nc = " +
+        plot.addLabel(0.05, 0.1, "Primary channel = c + m1 * (Predictor 1)\nc = " +
                 String.format(Locale.UK, "%.04f", cal_c) + "\nm1 = " +
                 String.format(Locale.UK, "%.04f", cal_m1) +
                 "\n \nR² = " + String.format(Locale.UK, "%.04f", R2));
@@ -1079,7 +1079,7 @@ public class saibr extends PlugInDialog implements ActionListener {
     private void calPlotRegression3(calEmbryoData[] allEmbryoData) {
 
         // Set up plot
-        Plot plot = new Plot("Linear model", "Linear model: c + m1 * (AF channel) + m2 * (RFP channel)", "GFP channel");
+        Plot plot = new Plot("Linear model", "Linear model: c + m1 * (Predictor 1) + m2 * (Predictor 2)", "Primary channel");
         Color[] colours = {Color.blue, Color.green, Color.red, Color.cyan, Color.magenta, Color.orange, Color.pink,
                 Color.gray, Color.lightGray, Color.gray};
 
@@ -1110,7 +1110,7 @@ public class saibr extends PlugInDialog implements ActionListener {
         plot.addPoints(new double[]{0, 65536}, new double[]{0, 65536}, Plot.LINE);
 
         // Add equation
-        plot.addLabel(0.05, 0.1, "GFP channel = c + m1 * (AF channel) + m2 * (RFP channel)\nc = " +
+        plot.addLabel(0.05, 0.1, "Primary channel = c + m1 * (Predictor 1) + m2 * (Predictor 2)\nc = " +
                 String.format(Locale.UK, "%.04f", cal_c) + "\nm1 = " +
                 String.format(Locale.UK, "%.04f", cal_m1) + "\nm2 = " +
                 String.format(Locale.UK, "%.04f", cal_m2) + "\n \nR² = " +
@@ -1206,20 +1206,20 @@ public class saibr extends PlugInDialog implements ActionListener {
                 calResultsTable.incrementCounter();
 
                 // Add embryo ID
-                calResultsTable.addValue("embryo_id", j);
+                calResultsTable.addValue("image_id", j);
 
                 // Add coordinates
                 calResultsTable.addValue("x_position", allEmbryoData[j].xc[i]);
                 calResultsTable.addValue("y_position", allEmbryoData[j].yc[i]);
 
                 // Add pixel values
-                calResultsTable.addValue("gfp_raw", allEmbryoData[j].flPixelVals[i]);
-                calResultsTable.addValue("GFP_GAUS", allEmbryoData[j].flGausPixelVals[i]);
-                calResultsTable.addValue("af_raw", allEmbryoData[j].afPixelVals[i]);
-                calResultsTable.addValue("af_gaus", allEmbryoData[j].afGausPixelVals[i]);
+                calResultsTable.addValue("primary_raw", allEmbryoData[j].flPixelVals[i]);
+                calResultsTable.addValue("PRIMARY_GAUS", allEmbryoData[j].flGausPixelVals[i]);
+                calResultsTable.addValue("predictor1_raw", allEmbryoData[j].afPixelVals[i]);
+                calResultsTable.addValue("predictor1_gaus", allEmbryoData[j].afGausPixelVals[i]);
                 if (!Objects.equals(calRedChannel, "<None>")) {
-                    calResultsTable.addValue("rfp_raw", allEmbryoData[j].redPixelVals[i]);
-                    calResultsTable.addValue("rfp_gaus", allEmbryoData[j].redGausPixelVals[i]);
+                    calResultsTable.addValue("predictor2_raw", allEmbryoData[j].redPixelVals[i]);
+                    calResultsTable.addValue("predictor2_gaus", allEmbryoData[j].redGausPixelVals[i]);
                 }
 
                 // Add predicted
@@ -1320,15 +1320,15 @@ public class saibr extends PlugInDialog implements ActionListener {
 
         // Checking channel requirements
         if (Objects.equals(runFlChannel, runAfChannel)) {
-            IJ.showMessage("ERROR: GFP and AF channels must be different");
+            IJ.showMessage("ERROR: Primary and Predictor 1 channels must be different");
             return;
         }
         if (Objects.equals(runAfChannel, runRedChannel)) {
-            IJ.showMessage("ERROR: AF and RFP channels must be different");
+            IJ.showMessage("ERROR: Predictor 1 and Predictor 2 channels must be different");
             return;
         }
         if (Objects.equals(runRedChannel, runFlChannel)) {
-            IJ.showMessage("ERROR: GFP and RFP channels must be different");
+            IJ.showMessage("ERROR: Primary and Predictor 2 channels must be different");
             return;
         }
 

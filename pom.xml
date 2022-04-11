@@ -14,7 +14,7 @@
 
 	<groupId>uk.ac.crick.goehringlab</groupId>
 	<artifactId>saibr_</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 
 	<name>SAIBR</name>
 	<description>A simple GUI-based FIJI plugin for performing spectral autofluorescence correction on fluorescence

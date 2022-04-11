@@ -223,11 +223,11 @@ public class saibr extends PlugInDialog implements ActionListener {
         calFlChannelBox = new JComboBox<>(channels);
 
         // Autofluorescence channel
-        JLabel afChannelLabel = new JLabel("Predictor channel 1 (AF):", SwingConstants.RIGHT);
+        JLabel afChannelLabel = new JLabel("Predictor channel 1:", SwingConstants.RIGHT);
         calAfChannelBox = new JComboBox<>(channels);
 
         // Red fluorophore channel (optional)
-        JLabel redChannelLabel = new JLabel("Predictor channel 2 (optional):", SwingConstants.RIGHT);
+        JLabel redChannelLabel = new JLabel(" Predictor channel 2 (optional):", SwingConstants.RIGHT);
         calRedChannelBox = new JComboBox<>(channels_with_none);
 
         // ROI
@@ -363,12 +363,12 @@ public class saibr extends PlugInDialog implements ActionListener {
         runFlChannelBox.setSelectedItem(calFlChannel);
 
         // Autofluorescence channel
-        JLabel afChannelLabel = new JLabel("Predictor channel 1 (AF):", SwingConstants.RIGHT);
+        JLabel afChannelLabel = new JLabel("Predictor channel 1:", SwingConstants.RIGHT);
         runAfChannelBox = new JComboBox<>(channels);
         runAfChannelBox.setSelectedItem(calAfChannel);
 
         // Red fluorophore channel (optional)
-        JLabel redChannelLabel = new JLabel("Predictor channel 2 (optional):", SwingConstants.RIGHT);
+        JLabel redChannelLabel = new JLabel(" Predictor channel 2 (optional):", SwingConstants.RIGHT);
         runRedChannelBox = new JComboBox<>(channels_with_none);
         runRedChannelBox.setSelectedItem(calRedChannel);
 

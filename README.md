@@ -12,7 +12,7 @@ The method relies on a multi-channel imaging approach, which we describe in full
 
 Please see the [user guide](saibr_user_guide.pdf) for full instructions on installation and use. 
 
-## Sample specific notes
+## Usage notes
 
 ***C. elegans***
 

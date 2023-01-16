@@ -1,6 +1,7 @@
 ## SAIBR: Spectral Autofluorescence Image correction By Regression
 
-[![CC BY 4.0][cc-by-shield]][cc-by] [![DOI](https://zenodo.org/badge/431824914.svg)](https://zenodo.org/badge/latestdoi/431824914)
+[![CC BY 4.0][cc-by-shield]][cc-by]
+[![DOI](https://zenodo.org/badge/431824914.svg)](https://zenodo.org/badge/latestdoi/431824914)
 
 This plugin provides an easy-to-use, GUI-based implementation of SAIBR (Spectral Autofluorescence Image correction By Regression): a simple, platform-independent protocol for spectral autofluorescence correction, especially useful for resolving and quantifying low-level green fluorophores in highly autofluorescent cells and tissues.
 
@@ -27,7 +28,7 @@ Please see the [user guide](saibr_user_guide.pdf) for full instructions on insta
 
 If you use this program as part of a publication, please cite the following reference: 
 
-Rodrigues, N.T.L., Bland, T., Borrego-Pinto, J., Ng, K., Hirani, N., Gu, Y., Foo, S., and Goehring, N.W. (2022). SAIBR: A simple, platform-independent method for spectral autofluorescence correction. BioRxiv 2022.01.19.476881.
+Nelio T. L. Rodrigues, Tom Bland, Joana Borrego-Pinto, KangBo Ng, Nisha Hirani, Ying Gu, Sherman Foo, Nathan W. Goehring; SAIBR: a simple, platform-independent method for spectral autofluorescence correction. Development 15 July 2022; 149 (14): dev200545. doi: https://doi.org/10.1242/dev.200545
 
 ## License
 

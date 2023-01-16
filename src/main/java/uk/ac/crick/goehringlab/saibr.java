@@ -1450,6 +1450,8 @@ Rename variables/functions and tidy up
 Thicken line on plot
 If calibrate window is closed and reopened, load previous configurations
 For run, add 'All' option to image list
+Switch to orthogonal distance regression (PCA)
+'Auto' option for selecting best sigma value. Think about best way to do this
 
 Bugs:
 Will crash if image is closed and subsequently reopened (window ID doesn't match up with name)

@@ -24,9 +24,13 @@ Please see the [user guide](saibr_user_guide.pdf) for full instructions on insta
 ***Fission yeast (S. pombe)***
 - The use of narrow bandpass filters yielded substantially better results than longpass filters.
 
+## Python implementation
+
+A python implementation of the code is available [here](https://github.com/goehringlab/saibr_python)
+
 ## Citation
 
-If you use this program as part of a publication, please cite the following reference: 
+If you use this method as part of a publication, please cite the following reference: 
 
 Nelio T. L. Rodrigues, Tom Bland, Joana Borrego-Pinto, KangBo Ng, Nisha Hirani, Ying Gu, Sherman Foo, Nathan W. Goehring; SAIBR: a simple, platform-independent method for spectral autofluorescence correction. Development 15 July 2022; 149 (14): dev200545. doi: https://doi.org/10.1242/dev.200545
 

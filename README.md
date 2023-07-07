@@ -7,7 +7,7 @@ This plugin provides an easy-to-use, GUI-based implementation of SAIBR (Spectral
 
 ![image](figure1.png)
 
-The method relies on a multi-channel imaging approach, which we describe in full in our paper (preprint available [here](https://www.biorxiv.org/content/10.1101/2022.01.19.476881v1)). Please read the paper to familiarise yourself with the method before using this plugin.
+The method relies on a multi-channel imaging approach, which we describe in full in our paper (see [here](https://journals.biologists.com/dev/article/149/14/dev200545/276004/SAIBR-a-simple-platform-independent-method-for)). Please read the paper to familiarise yourself with the method before using this plugin.
 
 ## Instructions
 

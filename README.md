@@ -3,15 +3,15 @@
 [![CC BY 4.0][cc-by-shield]][cc-by]
 [![DOI](https://zenodo.org/badge/431824914.svg)](https://zenodo.org/badge/latestdoi/431824914)
 
-This plugin provides an easy-to-use, GUI-based implementation of SAIBR (Spectral Autofluorescence Image correction By Regression): a simple, platform-independent protocol for spectral autofluorescence correction, especially useful for resolving and quantifying low-level green fluorophores in highly autofluorescent cells and tissues.
+This FIJI plugin provides an easy-to-use, GUI-based implementation of SAIBR (Spectral Autofluorescence Image correction By Regression): a simple, platform-independent protocol for spectral autofluorescence correction, especially useful for resolving and quantifying low-level green fluorophores in highly autofluorescent cells and tissues.
 
 ![image](figure1.png)
 
-The method relies on a multi-channel imaging approach, which we describe in full in our paper (preprint available [here](https://www.biorxiv.org/content/10.1101/2022.01.19.476881v1)). Please read the paper to familiarise yourself with the method before using this plugin.
+The method relies on a multi-channel imaging approach, which we describe in full in our paper (see [here](https://journals.biologists.com/dev/article/149/14/dev200545/276004/SAIBR-a-simple-platform-independent-method-for)). Please read the paper to familiarise yourself with the method before using the plugin.
 
 ## Instructions
 
-Please see the [user guide](saibr_user_guide.pdf) for full instructions on installation and use. 
+Please see the [user guide](https://raw.githubusercontent.com/goehringlab/saibr_fiji_plugin/master/saibr_user_guide.pdf) for full instructions on installation and use.
 
 ## Usage notes
 

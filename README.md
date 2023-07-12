@@ -11,7 +11,7 @@ The method relies on a multi-channel imaging approach, which we describe in full
 
 ## Instructions
 
-Please see the [user guide](saibr_user_guide.pdf) for full instructions on installation and use. 
+Please see the [user guide](https://raw.githubusercontent.com/goehringlab/saibr_fiji_plugin/master/saibr_user_guide.pdf) for full instructions on installation and use. 
 
 ## Usage notes
 

@@ -28,6 +28,12 @@ Please see the [user guide](https://raw.githubusercontent.com/goehringlab/saibr_
 
 A python implementation of the code is available [here](https://github.com/goehringlab/saibr_python)
 
+## Contact
+
+If you encounter any bugs with the plugin, please use the GitHub [issues form](https://github.com/goehringlab/saibr_fiji_plugin/issues)
+
+To share your experiences and any usage notes, please contact Nate Goehring (nate.goehring@crick.ac.uk)
+
 ## Citation
 
 If you use this method as part of a publication, please cite the following reference: 
